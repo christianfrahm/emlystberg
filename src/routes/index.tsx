@@ -13,16 +13,16 @@ import gavlmaleri2 from "../../pictures/gavlmaleri/576400471_2910781879118488_40
 import gavlmaleri3 from "../../pictures/gavlmaleri/576469770_2910781889118487_3309273332169913671_n.jpg";
 import gavlmaleri4 from "../../pictures/gavlmaleri/576526841_2910781935785149_2473914557753370951_n.jpg";
 import gavlmaleri5 from "../../pictures/gavlmaleri/577018251_2910781915785151_8188054167916885180_n.jpg";
-import akryl1 from "../../pictures/akryl/SaveClip.App_683786116_18585972187040073_1057071494516079796_n.jpg";
-import akryl2 from "../../pictures/akryl/SaveClip.App_684774266_18585972205040073_4387325874114542_n.jpg";
-import akryl3 from "../../pictures/akryl/SaveClip.App_682057696_18585972196040073_8355171174749295794_n.jpg";
-import akryl4 from "../../pictures/akryl/SaveClip.App_683729000_18585972223040073_6423261687875563209_n.jpg";
-import akryl5 from "../../pictures/akryl/SaveClip.App_685338945_18585972175040073_8842928278408963749_n.jpg";
-import akryl6 from "../../pictures/akryl/SaveClip.App_686146454_18585972145040073_8021875368258416037_n.jpg";
-import akryl7 from "../../pictures/akryl/SaveClip.App_687816570_18585972214040073_8108546544926377081_n.jpg";
-import akryl8 from "../../pictures/akryl/SaveClip.App_688161706_18585972247040073_2246194363668941122_n.jpg";
-import akryl9 from "../../pictures/akryl/SaveClip.App_682715458_18585972235040073_1230198617766805431_n.jpg";
-import akryl10 from "../../pictures/akryl/SaveClip.App_683536704_18585972160040073_104415637630865332_n.jpg";
+import amalie from "../../pictures/akryl/Amalie.jpg";
+import carl from "../../pictures/akryl/Carl.jpg";
+import frederik from "../../pictures/akryl/Frederik.jpg";
+import kathrine from "../../pictures/akryl/Kathrine.jpg";
+import luca from "../../pictures/akryl/Luca.jpg";
+import lucas from "../../pictures/akryl/Lucas.jpg";
+import marcus from "../../pictures/akryl/Marcus.jpg";
+import nicoline from "../../pictures/akryl/Nicoline.jpg";
+import sarah from "../../pictures/akryl/Sarah.jpg";
+import viktor from "../../pictures/akryl/Viktor.jpg";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -148,16 +148,16 @@ function Index() {
           caption="80 X 100 cm. Akryl på lærred."
           variant="gallery"
           images={[
-            { src: akryl1, alt: "Akryl på lærred 1" },
-            { src: akryl2, alt: "Akryl på lærred 2" },
-            { src: akryl3, alt: "Akryl på lærred 3" },
-            { src: akryl4, alt: "Akryl på lærred 4" },
-            { src: akryl5, alt: "Akryl på lærred 5" },
-            { src: akryl6, alt: "Akryl på lærred 6" },
-            { src: akryl7, alt: "Akryl på lærred 7" },
-            { src: akryl8, alt: "Akryl på lærred 8" },
-            { src: akryl9, alt: "Akryl på lærred 9" },
-            { src: akryl10, alt: "Akryl på lærred 10" },
+            { src: luca, alt: "Luca", caption: "Luca" },
+            { src: amalie, alt: "Amalie", caption: "Amalie" },
+            { src: lucas, alt: "Lucas", caption: "Lucas" },
+            { src: sarah, alt: "Sarah", caption: "Sarah" },
+            { src: marcus, alt: "Marcus", caption: "Marcus" },
+            { src: nicoline, alt: "Nicoline", caption: "Nicoline" },
+            { src: carl, alt: "Carl", caption: "Carl" },
+            { src: frederik, alt: "Frederik", caption: "Frederik" },
+            { src: kathrine, alt: "Kathrine", caption: "Kathrine" },
+            { src: viktor, alt: "Viktor", caption: "Viktor" },
           ]}
           body={
             <p>
@@ -201,6 +201,7 @@ function Index() {
           id="events"
           bg="var(--sage)"
           onEnter={onEnter}
+          transitionKey={activeEventIndex}
           imageOnRight={false}
           title="Udstillinger og events"
           variant="spread"

@@ -24,6 +24,8 @@ export interface SectionProps {
   imageOnRight?: boolean;
   /** Hide built-in image next/prev controls */
   showImageNavigation?: boolean;
+  /** Force transition key for externally controlled content (e.g. events carousel) */
+  transitionKey?: string | number;
   onEnter?: (id: string, bg: string) => void;
 }
 
@@ -39,12 +41,16 @@ export function Section({
   variant = "spread",
   imageOnRight = false,
   showImageNavigation = true,
+  transitionKey,
   onEnter,
 }: SectionProps) {
   const ref = useRef<HTMLElement | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const currentImage = images[activeImageIndex] ?? images[0];
   const currentBody = bodyByImage?.[activeImageIndex] ?? body;
+  const imageTransitionKey = transitionKey ?? activeImageIndex;
+  const shouldAnimateBody = transitionKey !== undefined || Boolean(bodyByImage);
+  const bodyTransitionKey = transitionKey ?? activeImageIndex;
   const hasTextContent = Boolean(eyebrow || title || caption || currentBody);
   const hasImage = Boolean(currentImage);
 
@@ -74,6 +80,8 @@ export function Section({
           if (entry.isIntersecting) {
             entry.target.classList.add("in-view");
             if (entry.intersectionRatio > 0.45) onEnter?.(id, bg);
+          } else {
+            entry.target.classList.remove("in-view");
           }
         }
       },
@@ -103,7 +111,7 @@ export function Section({
               hasTextContent && imageOnRight ? "md:order-2" : "md:order-1"
             }`}
           >
-            <figure className={currentImage.aspect ?? ""}>
+            <figure key={`image-${id}-${imageTransitionKey}`} className={`${currentImage.aspect ?? ""} content-swap`}>
               <img
                 src={currentImage.src}
                 alt={currentImage.alt}
@@ -160,7 +168,14 @@ export function Section({
               </h2>
             )}
             {caption && <p className="font-serif italic text-foreground/70">{caption}</p>}
-            {currentBody && <div className="space-y-5 text-[0.94rem]">{currentBody}</div>}
+            {currentBody && (
+              <div
+                key={shouldAnimateBody ? `body-${id}-${bodyTransitionKey}` : undefined}
+                className={`space-y-5 text-[0.94rem] ${shouldAnimateBody ? "content-swap" : ""}`}
+              >
+                {currentBody}
+              </div>
+            )}
           </aside>
         )}
       </div>
