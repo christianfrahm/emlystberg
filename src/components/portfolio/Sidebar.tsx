@@ -133,14 +133,15 @@ export function Sidebar({ items, activeId, onMenuClose }: Props) {
 
       <aside
         className={[
-          "fixed z-30 inset-y-0 left-0 w-full md:w-72 lg:w-80",
+          "fixed z-50 inset-y-0 left-0 w-full md:w-72 lg:w-80 md:z-30",
           "bg-background/85 backdrop-blur-md md:bg-transparent md:backdrop-blur-none",
-          "px-6 sm:px-8 md:px-12 pt-24 pb-10 md:py-14",
+          "px-6 sm:px-8 md:px-12 pt-24 md:py-14",
           "flex flex-col justify-between",
           "overflow-y-auto",
           "transition-transform duration-500 ease-out",
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         ].join(" ")}
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 2.5rem)" }}
       >
         <div>
           <a
