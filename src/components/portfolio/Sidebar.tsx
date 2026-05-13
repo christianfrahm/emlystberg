@@ -6,9 +6,10 @@ interface Props {
   items: NavItem[];
   activeId: string;
   onMenuClose?: () => void;
+  onMenuStateChange?: (isOpen: boolean) => void;
 }
 
-export function Sidebar({ items, activeId, onMenuClose }: Props) {
+export function Sidebar({ items, activeId, onMenuClose, onMenuStateChange }: Props) {
   const [open, setOpen] = useState(false);
   const isMobileViewport = () => window.matchMedia("(max-width: 767px)").matches;
   const notifyMenuClosed = () => {
@@ -70,6 +71,10 @@ export function Sidebar({ items, activeId, onMenuClose }: Props) {
       notifyMenuClosed();
     }
   }, [activeId]);
+
+  useEffect(() => {
+    onMenuStateChange?.(open);
+  }, [open, onMenuStateChange]);
 
   useEffect(() => {
     const runInitialAlignment = () => {

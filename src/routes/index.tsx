@@ -77,6 +77,7 @@ function Index() {
   const [bg, setBg] = useState(DEFAULT_BG);
   const [activeId, setActiveId] = useState<string>("intro");
   const [activeEventIndex, setActiveEventIndex] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const activeEvent = CURRENT_EVENTS[activeEventIndex];
 
   const onEnter = useCallback((id: string, color: string) => {
@@ -98,6 +99,25 @@ function Index() {
       document.body.style.backgroundColor = "";
     };
   }, [bg]);
+
+  useEffect(() => {
+    const resolveCssVarColor = (color: string) => {
+      if (!color.startsWith("var(")) return color;
+      const variableName = color.slice(4, -1).trim();
+      const resolved = getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      return resolved || DEFAULT_BG;
+    };
+
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "theme-color");
+      document.head.appendChild(meta);
+    }
+
+    const themeColor = isMenuOpen ? "#6b7280" : resolveCssVarColor(bg);
+    meta.setAttribute("content", themeColor);
+  }, [bg, isMenuOpen]);
 
   const syncSectionFromViewport = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -125,7 +145,12 @@ function Index() {
 
   return (
     <div id="top" className="min-h-screen">
-      <Sidebar items={NAV} activeId={activeId} onMenuClose={syncSectionFromViewport} />
+      <Sidebar
+        items={NAV}
+        activeId={activeId}
+        onMenuClose={syncSectionFromViewport}
+        onMenuStateChange={setIsMenuOpen}
+      />
 
       <main className="pt-16 md:pt-0 md:ml-72 lg:ml-80">
         {/* Intro */}
