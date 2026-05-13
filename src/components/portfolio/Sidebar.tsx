@@ -40,26 +40,39 @@ export function Sidebar({ items, activeId }: Props) {
     window.setTimeout(settleAndCorrect, 450);
   };
 
-  useEffect(() => {
-    setOpen(false);
-  }, [activeId]);
-
-  useEffect(() => {
+  const alignHashTargetToCenter = () => {
     const hash = window.location.hash.replace(/^#/, "");
     if (!hash) return;
 
     const target = document.getElementById(hash);
     if (!target) return;
 
-    const alignToCenter = () => {
-      const correctedTop = getCenteredTop(target);
-      if (Math.abs(window.scrollY - correctedTop) > 2) {
-        window.scrollTo({ top: correctedTop, behavior: "auto" });
-      }
+    const correctedTop = getCenteredTop(target);
+    if (Math.abs(window.scrollY - correctedTop) > 2) {
+      window.scrollTo({ top: correctedTop, behavior: "auto" });
+    }
+  };
+
+  useEffect(() => {
+    setOpen(false);
+  }, [activeId]);
+
+  useEffect(() => {
+    const runInitialAlignment = () => {
+      requestAnimationFrame(() => requestAnimationFrame(alignHashTargetToCenter));
+      window.setTimeout(alignHashTargetToCenter, 250);
+      window.setTimeout(alignHashTargetToCenter, 600);
+      window.setTimeout(alignHashTargetToCenter, 1200);
     };
 
-    requestAnimationFrame(() => requestAnimationFrame(alignToCenter));
-    window.setTimeout(alignToCenter, 450);
+    runInitialAlignment();
+    window.addEventListener("hashchange", runInitialAlignment);
+    window.addEventListener("load", runInitialAlignment);
+
+    return () => {
+      window.removeEventListener("hashchange", runInitialAlignment);
+      window.removeEventListener("load", runInitialAlignment);
+    };
   }, []);
 
   return (
