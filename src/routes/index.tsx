@@ -213,13 +213,15 @@ function Index() {
           ]}
           body={
             <>
-              <p className="font-serif text-lg leading-snug">{activeEvent.title}</p>
+              <div className="h-[3.5rem] overflow-hidden">
+                <p className="font-serif text-lg leading-snug">{activeEvent.title}</p>
+              </div>
               <p className="font-sans text-xs uppercase tracking-[0.2em] text-foreground/70">
                 {activeEvent.period}
               </p>
-              <div className="pt-3 relative h-12 w-full font-sans">
+              <div className="mt-5 relative h-14 w-full font-sans">
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <p className="translate-y-[4px] text-[11px] uppercase tracking-[0.14em] text-muted-foreground tabular-nums text-center leading-none">
+                  <p className="translate-y-[5px] text-[11px] uppercase tracking-[0.14em] text-muted-foreground tabular-nums text-center leading-none">
                     {activeEventIndex + 1} / {CURRENT_EVENTS.length}
                   </p>
                 </div>
@@ -228,25 +230,25 @@ function Index() {
                   <button
                     type="button"
                     onClick={showPreviousEvent}
-                    className="absolute left-0 top-[46%] -translate-y-1/2 h-11 w-11 flex items-center justify-center text-4xl leading-none font-light text-foreground/40 hover:text-foreground/70 transition-colors"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center text-4xl leading-none font-light text-foreground/40 hover:text-foreground/70 transition-colors"
                     aria-label="Forrige event"
                   >
                     ‹
                   </button>
                 ) : (
-                  <div className="absolute left-0 top-[46%] -translate-y-1/2 h-12 w-12" aria-hidden />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 h-12 w-12" aria-hidden />
                 )}
                 {activeEventIndex < CURRENT_EVENTS.length - 1 ? (
                   <button
                     type="button"
                     onClick={showNextEvent}
-                    className="absolute right-0 top-[46%] -translate-y-1/2 h-11 w-11 flex items-center justify-center text-4xl leading-none font-light text-foreground/40 hover:text-foreground/70 transition-colors"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center text-4xl leading-none font-light text-foreground/40 hover:text-foreground/70 transition-colors"
                     aria-label="Næste event"
                   >
                     ›
                   </button>
                 ) : (
-                  <div className="absolute right-0 top-[46%] -translate-y-1/2 h-12 w-12" aria-hidden />
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 h-12 w-12" aria-hidden />
                 )}
               </div>
             </>
