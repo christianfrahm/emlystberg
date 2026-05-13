@@ -10,14 +10,34 @@ interface Props {
 export function Sidebar({ items, activeId }: Props) {
   const [open, setOpen] = useState(false);
 
+  const getCenteredTop = (target: HTMLElement) => {
+    const rect = target.getBoundingClientRect();
+    const absoluteTop = rect.top + window.scrollY;
+    const centeredTop = absoluteTop + Math.max(0, (rect.height - window.innerHeight) / 2);
+    const maxScrollTop = Math.max(
+      0,
+      document.documentElement.scrollHeight - window.innerHeight,
+    );
+    return Math.min(centeredTop, maxScrollTop);
+  };
+
   const scrollWithOffset = (targetId: string) => {
     const target = document.getElementById(targetId);
     if (!target) return;
 
-    const extraOffset = 220;
-    const top = target.getBoundingClientRect().top + window.scrollY + extraOffset;
-    window.scrollTo({ top, behavior: "smooth" });
+    const targetTop = getCenteredTop(target);
+    window.scrollTo({ top: targetTop, behavior: "smooth" });
     window.history.replaceState(null, "", `#${targetId}`);
+
+    const settleAndCorrect = () => {
+      const correctedTop = getCenteredTop(target);
+      if (Math.abs(window.scrollY - correctedTop) > 2) {
+        window.scrollTo({ top: correctedTop, behavior: "auto" });
+      }
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(settleAndCorrect));
+    window.setTimeout(settleAndCorrect, 450);
   };
 
   useEffect(() => {

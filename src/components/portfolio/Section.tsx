@@ -149,7 +149,7 @@ export function Section({
                 <button
                   type="button"
                   onClick={showPrevImage}
-                  className="cursor-pointer px-4 py-2 border border-foreground/40 font-sans text-xs uppercase tracking-[0.18em]"
+                  className="px-4 py-2 border border-foreground/40 font-sans text-xs uppercase tracking-[0.18em] cursor-pointer transition-colors hover:bg-foreground/5"
                   aria-label="Forrige billede"
                 >
                   ← Forrige
@@ -160,7 +160,7 @@ export function Section({
                 <button
                   type="button"
                   onClick={showNextImage}
-                  className="cursor-pointer px-4 py-2 border border-foreground/40 font-sans text-xs uppercase tracking-[0.18em]"
+                  className="px-4 py-2 border border-foreground/40 font-sans text-xs uppercase tracking-[0.18em] cursor-pointer transition-colors hover:bg-foreground/5"
                   aria-label="Næste billede"
                 >
                   Næste →

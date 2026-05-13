@@ -187,15 +187,15 @@
   }
 
   .content-swap {
-    animation: content-swap-in 560ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    animation: content-swap-in 720ms cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform, opacity;
   }
 }
 
 @keyframes content-swap-in {
   from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.995);
+    opacity: 0.2;
+    transform: translateY(6px) scale(0.995);
   }
   to {
     opacity: 1;
