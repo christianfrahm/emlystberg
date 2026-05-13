@@ -10,6 +10,16 @@ interface Props {
 export function Sidebar({ items, activeId }: Props) {
   const [open, setOpen] = useState(false);
 
+  const scrollWithOffset = (targetId: string) => {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    const extraOffset = 100;
+    const top = target.getBoundingClientRect().top + window.scrollY + extraOffset;
+    window.scrollTo({ top, behavior: "smooth" });
+    window.history.replaceState(null, "", `#${targetId}`);
+  };
+
   useEffect(() => {
     setOpen(false);
   }, [activeId]);
@@ -57,7 +67,16 @@ export function Sidebar({ items, activeId }: Props) {
         ].join(" ")}
       >
         <div>
-          <a href="#top" className="block">
+          <a
+            href="#top"
+            className="block"
+            onClick={(event) => {
+              event.preventDefault();
+              window.scrollTo({ top: 0, behavior: "smooth" });
+              window.history.replaceState(null, "", "#top");
+              setOpen(false);
+            }}
+          >
             <h1 className="font-serif text-3xl leading-[1.05] tracking-tight">
               emilie<br />lystberg
             </h1>
@@ -70,7 +89,15 @@ export function Sidebar({ items, activeId }: Props) {
               const active = activeId === item.id;
               return (
                 <li key={item.id}>
-                  <a href={`#${item.id}`} className="group block py-1.5">
+                  <a
+                    href={`#${item.id}`}
+                    className="group block py-1.5"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      scrollWithOffset(item.id);
+                      setOpen(false);
+                    }}
+                  >
                     <div className="flex items-baseline gap-3">
                       <span
                         aria-hidden

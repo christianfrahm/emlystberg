@@ -26,6 +26,8 @@ export interface SectionProps {
   showImageNavigation?: boolean;
   /** Force transition key for externally controlled content (e.g. events carousel) */
   transitionKey?: string | number;
+  /** Additional image URLs to preload for smooth transitions */
+  preloadImageSources?: string[];
   onEnter?: (id: string, bg: string) => void;
 }
 
@@ -42,6 +44,7 @@ export function Section({
   imageOnRight = false,
   showImageNavigation = true,
   transitionKey,
+  preloadImageSources,
   onEnter,
 }: SectionProps) {
   const ref = useRef<HTMLElement | null>(null);
@@ -73,16 +76,19 @@ export function Section({
   }, [images.length]);
 
   useEffect(() => {
-    if (typeof window === "undefined" || images.length <= 1) return;
+    if (typeof window === "undefined") return;
 
-    for (const image of images) {
-      if (preloadedSourcesRef.current.has(image.src)) continue;
+    const sources = preloadImageSources ?? images.map((image) => image.src);
+    if (sources.length <= 1) return;
+
+    for (const source of sources) {
+      if (preloadedSourcesRef.current.has(source)) continue;
       const preloadImage = new Image();
       preloadImage.decoding = "async";
-      preloadImage.src = image.src;
-      preloadedSourcesRef.current.add(image.src);
+      preloadImage.src = source;
+      preloadedSourcesRef.current.add(source);
     }
-  }, [images]);
+  }, [images, preloadImageSources]);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -128,7 +134,7 @@ export function Section({
               <img
                 src={currentImage.src}
                 alt={currentImage.alt}
-                loading={images.length > 1 ? "eager" : "lazy"}
+                loading={images.length > 1 || transitionKey !== undefined ? "eager" : "lazy"}
                 className="w-full h-[52vh] sm:h-[60vh] md:h-[80vh] object-contain"
               />
               {currentImage.caption && (

@@ -202,6 +202,7 @@ function Index() {
           bg="var(--sage)"
           onEnter={onEnter}
           transitionKey={activeEventIndex}
+          preloadImageSources={CURRENT_EVENTS.map((event) => event.image)}
           imageOnRight={false}
           title="Udstillinger og events"
           variant="spread"
