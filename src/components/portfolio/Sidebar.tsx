@@ -1,56 +1,63 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 
 export type NavItem = { id: string; label: string; year?: string };
 
 interface Props {
   items: NavItem[];
   activeId: string;
+  backgroundColor?: string;
   onMenuClose?: () => void;
   onMenuStateChange?: (isOpen: boolean) => void;
 }
 
-export function Sidebar({ items, activeId, onMenuClose, onMenuStateChange }: Props) {
+export function Sidebar({
+  items,
+  activeId,
+  backgroundColor = "var(--background)",
+  onMenuClose,
+  onMenuStateChange,
+}: Props) {
   const [open, setOpen] = useState(false);
-  const isMobileViewport = () => window.matchMedia("(max-width: 767px)").matches;
-  const notifyMenuClosed = () => {
+  const isMobileViewport = useCallback(() => window.matchMedia("(max-width: 767px)").matches, []);
+  const notifyMenuClosed = useCallback(() => {
     requestAnimationFrame(() => onMenuClose?.());
-  };
+  }, [onMenuClose]);
 
-  const getCenteredTop = (target: HTMLElement) => {
+  const getCenteredTop = useCallback((target: HTMLElement) => {
     const rect = target.getBoundingClientRect();
     const absoluteTop = rect.top + window.scrollY;
     const centeredTop = absoluteTop + Math.max(0, (rect.height - window.innerHeight) / 2);
-    const maxScrollTop = Math.max(
-      0,
-      document.documentElement.scrollHeight - window.innerHeight,
-    );
+    const maxScrollTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
     return Math.min(centeredTop, maxScrollTop);
-  };
+  }, []);
 
-  const scrollWithOffset = (targetId: string) => {
-    const target = document.getElementById(targetId);
-    if (!target) return;
+  const scrollWithOffset = useCallback(
+    (targetId: string) => {
+      const target = document.getElementById(targetId);
+      if (!target) return;
 
-    const targetTop = isMobileViewport()
-      ? target.getBoundingClientRect().top + window.scrollY
-      : getCenteredTop(target);
-    window.scrollTo({ top: targetTop, behavior: "smooth" });
-    window.history.replaceState(null, "", `#${targetId}`);
-
-    const settleAndCorrect = () => {
-      const correctedTop = isMobileViewport()
+      const targetTop = isMobileViewport()
         ? target.getBoundingClientRect().top + window.scrollY
         : getCenteredTop(target);
-      if (Math.abs(window.scrollY - correctedTop) > 2) {
-        window.scrollTo({ top: correctedTop, behavior: "auto" });
-      }
-    };
+      window.scrollTo({ top: targetTop, behavior: "smooth" });
+      window.history.replaceState(null, "", `#${targetId}`);
 
-    requestAnimationFrame(() => requestAnimationFrame(settleAndCorrect));
-    window.setTimeout(settleAndCorrect, 450);
-  };
+      const settleAndCorrect = () => {
+        const correctedTop = isMobileViewport()
+          ? target.getBoundingClientRect().top + window.scrollY
+          : getCenteredTop(target);
+        if (Math.abs(window.scrollY - correctedTop) > 2) {
+          window.scrollTo({ top: correctedTop, behavior: "auto" });
+        }
+      };
 
-  const alignHashTargetToCenter = () => {
+      requestAnimationFrame(() => requestAnimationFrame(settleAndCorrect));
+      window.setTimeout(settleAndCorrect, 450);
+    },
+    [getCenteredTop, isMobileViewport],
+  );
+
+  const alignHashTargetToCenter = useCallback(() => {
     const hash = window.location.hash.replace(/^#/, "");
     if (!hash) return;
 
@@ -63,14 +70,14 @@ export function Sidebar({ items, activeId, onMenuClose, onMenuStateChange }: Pro
     if (Math.abs(window.scrollY - correctedTop) > 2) {
       window.scrollTo({ top: correctedTop, behavior: "auto" });
     }
-  };
+  }, [getCenteredTop, isMobileViewport]);
 
   useEffect(() => {
     setOpen(false);
     if (isMobileViewport()) {
       notifyMenuClosed();
     }
-  }, [activeId]);
+  }, [activeId, isMobileViewport, notifyMenuClosed]);
 
   useEffect(() => {
     onMenuStateChange?.(open);
@@ -92,7 +99,7 @@ export function Sidebar({ items, activeId, onMenuClose, onMenuStateChange }: Pro
       window.removeEventListener("hashchange", runInitialAlignment);
       window.removeEventListener("load", runInitialAlignment);
     };
-  }, []);
+  }, [alignHashTargetToCenter]);
 
   return (
     <>
@@ -139,14 +146,19 @@ export function Sidebar({ items, activeId, onMenuClose, onMenuStateChange }: Pro
       <aside
         className={[
           "fixed z-50 inset-y-0 left-0 w-full md:w-72 lg:w-80 md:z-30",
-          "bg-background/85 backdrop-blur-md md:bg-transparent md:backdrop-blur-none",
+          "mobile-menu-panel backdrop-blur-md md:backdrop-blur-none",
           "px-6 sm:px-8 md:px-12 pt-24 md:py-14",
           "flex flex-col justify-between",
           "overflow-y-auto",
           "transition-transform duration-500 ease-out",
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         ].join(" ")}
-        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 2.5rem)" }}
+        style={
+          {
+            "--mobile-menu-background": backgroundColor,
+            paddingBottom: "calc(env(safe-area-inset-bottom) + 2.5rem)",
+          } as CSSProperties
+        }
       >
         <div>
           <a
@@ -163,7 +175,9 @@ export function Sidebar({ items, activeId, onMenuClose, onMenuStateChange }: Pro
             }}
           >
             <h1 className="font-serif text-3xl leading-[1.05] tracking-tight">
-              emilie<br />lystberg
+              emilie
+              <br />
+              lystberg
             </h1>
           </a>
         </div>
@@ -197,7 +211,9 @@ export function Sidebar({ items, activeId, onMenuClose, onMenuStateChange }: Pro
                       <span
                         className={[
                           "font-serif text-base leading-snug transition-colors",
-                          active ? "text-foreground" : "text-foreground/55 group-hover:text-foreground",
+                          active
+                            ? "text-foreground"
+                            : "text-foreground/55 group-hover:text-foreground",
                         ].join(" ")}
                       >
                         {item.label}
@@ -214,7 +230,6 @@ export function Sidebar({ items, activeId, onMenuClose, onMenuStateChange }: Pro
             })}
           </ul>
         </nav>
-
       </aside>
     </>
   );

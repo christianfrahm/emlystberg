@@ -48,6 +48,8 @@ const NAV: NavItem[] = [
 ];
 
 const DEFAULT_BG = "var(--butter)";
+const DEFAULT_THEME_COLOR = "#eadf35";
+const MENU_THEME_COLOR = "#6b7280";
 const SECTION_BG: Record<string, string> = {
   intro: DEFAULT_BG,
   gavlmaleri: "var(--clay)",
@@ -56,6 +58,15 @@ const SECTION_BG: Record<string, string> = {
   events: "var(--sage)",
   om: "var(--sky)",
   kontakt: "var(--butter)",
+};
+const SECTION_THEME_COLOR: Record<string, string> = {
+  intro: DEFAULT_THEME_COLOR,
+  gavlmaleri: "#f28b4a",
+  akryl: "#f06a5f",
+  solskin: "#f0d95a",
+  events: "#78d779",
+  om: "#58a9f2",
+  kontakt: DEFAULT_THEME_COLOR,
 };
 const SECTION_IDS = ["intro", ...NAV.map((item) => item.id)];
 const CURRENT_EVENTS = [
@@ -101,13 +112,6 @@ function Index() {
   }, [bg]);
 
   useEffect(() => {
-    const resolveCssVarColor = (color: string) => {
-      if (!color.startsWith("var(")) return color;
-      const variableName = color.slice(4, -1).trim();
-      const resolved = getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
-      return resolved || DEFAULT_BG;
-    };
-
     let meta = document.querySelector('meta[name="theme-color"]');
     if (!meta) {
       meta = document.createElement("meta");
@@ -115,9 +119,17 @@ function Index() {
       document.head.appendChild(meta);
     }
 
-    const themeColor = isMenuOpen ? "#6b7280" : resolveCssVarColor(bg);
-    meta.setAttribute("content", themeColor);
-  }, [bg, isMenuOpen]);
+    const themeColor = isMenuOpen
+      ? MENU_THEME_COLOR
+      : (SECTION_THEME_COLOR[activeId] ?? DEFAULT_THEME_COLOR);
+    const applyThemeColor = () => meta.setAttribute("content", themeColor);
+
+    applyThemeColor();
+    requestAnimationFrame(applyThemeColor);
+    const timeout = window.setTimeout(applyThemeColor, 250);
+
+    return () => window.clearTimeout(timeout);
+  }, [activeId, isMenuOpen]);
 
   const syncSectionFromViewport = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -148,6 +160,7 @@ function Index() {
       <Sidebar
         items={NAV}
         activeId={activeId}
+        backgroundColor={bg}
         onMenuClose={syncSectionFromViewport}
         onMenuStateChange={setIsMenuOpen}
       />
@@ -220,16 +233,14 @@ function Index() {
           ]}
           body={
             <p>
-              På nettet sælger vi os selv – frivilligt, på papiret – men praktisk
-              talt er der langt fra tale om samtykke. Virksomhederne udnytter
-              vores natur og de lever af vores afhængighed. Vi fratages vores
-              ungdom, fortrænger forgængeligheden, fokuserer på det forkerte og
-              vi opdager det for sent.
+              På nettet sælger vi os selv – frivilligt, på papiret – men praktisk talt er der langt
+              fra tale om samtykke. Virksomhederne udnytter vores natur og de lever af vores
+              afhængighed. Vi fratages vores ungdom, fortrænger forgængeligheden, fokuserer på det
+              forkerte og vi opdager det for sent.
               <br />
-              <br />
-              I en verden hvor vi (mere eller mindre) glædeligt sælger os selv,
-              vores drømme, ambitioner, og kærlighed til os selv, for bare korte
-              momenter af indbildt glæde – spørger jeg: Ville du også sælge dine venner?
+              <br />I en verden hvor vi (mere eller mindre) glædeligt sælger os selv, vores drømme,
+              ambitioner, og kærlighed til os selv, for bare korte momenter af indbildt glæde –
+              spørger jeg: Ville du også sælge dine venner?
             </p>
           }
         />
@@ -250,8 +261,8 @@ function Index() {
           ]}
           body={
             <p>
-              Kan I huske min gule notesbog fra gymnasietiden? Den bliver nu
-              udgivet som digtsamlingen ‘Solskin og Tvivl’.
+              Kan I huske min gule notesbog fra gymnasietiden? Den bliver nu udgivet som
+              digtsamlingen ‘Solskin og Tvivl’.
             </p>
           }
         />
@@ -309,7 +320,10 @@ function Index() {
                     ›
                   </button>
                 ) : (
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 h-12 w-12" aria-hidden />
+                  <div
+                    className="absolute right-0 top-1/2 -translate-y-1/2 h-12 w-12"
+                    aria-hidden
+                  />
                 )}
               </div>
             </>
@@ -332,15 +346,13 @@ function Index() {
           body={
             <>
               <p>
-                Emilie Lystberg (f. 2000) blev som 19-årig student fra Rungsted
-                Gymnasium. Siden da har hun været bosat i København og Østrig,
-                hvor hun arbejder som ski-instruktør.
+                Emilie Lystberg (f. 2000) blev som 19-årig student fra Rungsted Gymnasium. Siden da
+                har hun været bosat i København og Østrig, hvor hun arbejder som ski-instruktør.
               </p>
               <p>
-                Emilie Lystberg har altid været nysgerrig på verden og søger at
-                finde svar på livets små og store spørgsmål. Hun har sin lille,
-                solskinsgule notesbog med sig overalt og skriver spontane digte,
-                når ordene melder sig.
+                Emilie Lystberg har altid været nysgerrig på verden og søger at finde svar på livets
+                små og store spørgsmål. Hun har sin lille, solskinsgule notesbog med sig overalt og
+                skriver spontane digte, når ordene melder sig.
               </p>
             </>
           }
@@ -357,7 +369,10 @@ function Index() {
             <>
               <div className="space-y-3 text-base font-sans not-italic">
                 <p>
-                  <a href="mailto:emilie@lystberg.dk" className="font-serif text-2xl underline-offset-4 hover:underline">
+                  <a
+                    href="mailto:emilie@lystberg.dk"
+                    className="font-serif text-2xl underline-offset-4 hover:underline"
+                  >
                     emilie@lystberg.dk
                   </a>
                 </p>
@@ -369,10 +384,13 @@ function Index() {
 
       <div
         aria-hidden
-        className="fixed inset-x-0 bottom-0 z-40 md:hidden pointer-events-none"
+        className={[
+          "fixed inset-x-0 bottom-0 md:hidden pointer-events-none",
+          isMenuOpen ? "z-[60]" : "z-40",
+        ].join(" ")}
         style={{
           height: "env(safe-area-inset-bottom)",
-          backgroundColor: bg,
+          backgroundColor: isMenuOpen ? MENU_THEME_COLOR : bg,
         }}
       />
     </div>
