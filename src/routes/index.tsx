@@ -48,6 +48,16 @@ const NAV: NavItem[] = [
 ];
 
 const DEFAULT_BG = "var(--butter)";
+const SECTION_BG: Record<string, string> = {
+  intro: DEFAULT_BG,
+  gavlmaleri: "var(--clay)",
+  akryl: "var(--rose)",
+  solskin: "var(--bone)",
+  events: "var(--sage)",
+  om: "var(--sky)",
+  kontakt: "var(--butter)",
+};
+const SECTION_IDS = ["intro", ...NAV.map((item) => item.id)];
 const CURRENT_EVENTS = [
   {
     period: "Maj - Juli 2026",
@@ -89,9 +99,33 @@ function Index() {
     };
   }, [bg]);
 
+  const syncSectionFromViewport = useCallback(() => {
+    if (typeof window === "undefined") return;
+
+    const viewportCenter = window.innerHeight / 2;
+    let bestId = activeId;
+    let bestDistance = Number.POSITIVE_INFINITY;
+
+    for (const id of SECTION_IDS) {
+      const section = document.getElementById(id);
+      if (!section) continue;
+
+      const rect = section.getBoundingClientRect();
+      const center = rect.top + rect.height / 2;
+      const distance = Math.abs(center - viewportCenter);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestId = id;
+      }
+    }
+
+    setActiveId(bestId);
+    setBg(SECTION_BG[bestId] ?? DEFAULT_BG);
+  }, [activeId]);
+
   return (
     <div id="top" className="min-h-screen">
-      <Sidebar items={NAV} activeId={activeId} />
+      <Sidebar items={NAV} activeId={activeId} onMenuClose={syncSectionFromViewport} />
 
       <main className="pt-16 md:pt-0 md:ml-72 lg:ml-80">
         {/* Intro */}

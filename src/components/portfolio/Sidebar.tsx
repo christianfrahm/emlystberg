@@ -5,11 +5,15 @@ export type NavItem = { id: string; label: string; year?: string };
 interface Props {
   items: NavItem[];
   activeId: string;
+  onMenuClose?: () => void;
 }
 
-export function Sidebar({ items, activeId }: Props) {
+export function Sidebar({ items, activeId, onMenuClose }: Props) {
   const [open, setOpen] = useState(false);
   const isMobileViewport = () => window.matchMedia("(max-width: 767px)").matches;
+  const notifyMenuClosed = () => {
+    requestAnimationFrame(() => onMenuClose?.());
+  };
 
   const getCenteredTop = (target: HTMLElement) => {
     const rect = target.getBoundingClientRect();
@@ -62,6 +66,9 @@ export function Sidebar({ items, activeId }: Props) {
 
   useEffect(() => {
     setOpen(false);
+    if (isMobileViewport()) {
+      notifyMenuClosed();
+    }
   }, [activeId]);
 
   useEffect(() => {
@@ -90,7 +97,15 @@ export function Sidebar({ items, activeId }: Props) {
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)" }}
       >
         <button
-          onClick={() => setOpen((v) => !v)}
+          onClick={() =>
+            setOpen((v) => {
+              const next = !v;
+              if (!next) {
+                notifyMenuClosed();
+              }
+              return next;
+            })
+          }
           aria-label="Toggle menu"
           className="h-10 w-10 inline-flex items-center justify-center text-foreground/80 hover:text-foreground transition-colors"
         >
@@ -136,6 +151,9 @@ export function Sidebar({ items, activeId }: Props) {
               window.scrollTo({ top: 0, behavior: "smooth" });
               window.history.replaceState(null, "", "#top");
               setOpen(false);
+              if (isMobileViewport()) {
+                notifyMenuClosed();
+              }
             }}
           >
             <h1 className="font-serif text-3xl leading-[1.05] tracking-tight">
@@ -157,6 +175,9 @@ export function Sidebar({ items, activeId }: Props) {
                       event.preventDefault();
                       scrollWithOffset(item.id);
                       setOpen(false);
+                      if (isMobileViewport()) {
+                        notifyMenuClosed();
+                      }
                     }}
                   >
                     <div className="flex items-baseline gap-3">
