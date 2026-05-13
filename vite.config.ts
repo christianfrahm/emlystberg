@@ -6,5 +6,5 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [tanstackRouter(), react(), tsconfigPaths(), tailwindcss()],
-  base: "/artistic-archive/",
+  base: "./",
 });
