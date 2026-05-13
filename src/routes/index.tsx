@@ -232,7 +232,7 @@ function Index() {
                   <button
                     type="button"
                     onClick={showPreviousEvent}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center text-4xl leading-none font-light text-foreground/40 hover:text-foreground/70 transition-colors"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 h-11 w-11 cursor-pointer flex items-center justify-center text-4xl leading-none font-light text-foreground/40 hover:text-foreground/70 transition-colors"
                     aria-label="Forrige event"
                   >
                     ‹
@@ -244,7 +244,7 @@ function Index() {
                   <button
                     type="button"
                     onClick={showNextEvent}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center text-4xl leading-none font-light text-foreground/40 hover:text-foreground/70 transition-colors"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 h-11 w-11 cursor-pointer flex items-center justify-center text-4xl leading-none font-light text-foreground/40 hover:text-foreground/70 transition-colors"
                     aria-label="Næste event"
                   >
                     ›

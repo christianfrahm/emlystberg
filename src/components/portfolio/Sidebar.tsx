@@ -14,7 +14,7 @@ export function Sidebar({ items, activeId }: Props) {
     const target = document.getElementById(targetId);
     if (!target) return;
 
-    const extraOffset = 100;
+    const extraOffset = 220;
     const top = target.getBoundingClientRect().top + window.scrollY + extraOffset;
     window.scrollTo({ top, behavior: "smooth" });
     window.history.replaceState(null, "", `#${targetId}`);
