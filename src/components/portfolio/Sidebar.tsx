@@ -85,7 +85,10 @@ export function Sidebar({ items, activeId }: Props) {
   return (
     <>
       {/* Mobile top bar */}
-      <header className="md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-end px-4 py-3 bg-background/80 backdrop-blur-sm border-b border-border/40">
+      <header
+        className="md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-end px-4 pb-3 bg-[rgba(107,114,128,0.1)] backdrop-blur-sm border-b border-white/20"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)" }}
+      >
         <button
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle menu"
