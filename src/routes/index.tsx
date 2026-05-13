@@ -3,22 +3,36 @@ import { useCallback, useEffect, useState } from "react";
 import { Sidebar, type NavItem } from "@/components/portfolio/Sidebar";
 import { Section } from "@/components/portfolio/Section";
 
-import artwork1 from "@/assets/artwork-1.jpg";
-import artwork2 from "@/assets/artwork-2.jpg";
-import artwork3 from "@/assets/artwork-3.jpg";
-import artwork4 from "@/assets/artwork-4.jpg";
-import artwork5 from "@/assets/artwork-5.jpg";
-import portrait from "@/assets/portrait.jpg";
+import emiliePortrait from "../../pictures/om mig/AB Emilie Lystberg FORFATTER.jpg";
+import yellowTulip from "../../pictures/forside/Yellow_Tulip_PNG_Transparent_Clipart.png";
+import solskinOgTvivl from "../../pictures/solskin og tvivl/solskin-og-tvivl_635344_1.jpg";
+import tesePoster from "../../pictures/events/tese/SnapInsta.to_670552270_17921748189322817_6741333732493793503_n.jpg";
+import bogforum1 from "../../pictures/events/bogforum/SnapInsta.to_655796800_18085849037254740_5006557111501421844_n.jpg";
+import gavlmaleri1 from "../../pictures/gavlmaleri/575183774_2910781842451825_8014620892406338350_n.jpg";
+import gavlmaleri2 from "../../pictures/gavlmaleri/576400471_2910781879118488_4065438245366497215_n.jpg";
+import gavlmaleri3 from "../../pictures/gavlmaleri/576469770_2910781889118487_3309273332169913671_n.jpg";
+import gavlmaleri4 from "../../pictures/gavlmaleri/576526841_2910781935785149_2473914557753370951_n.jpg";
+import gavlmaleri5 from "../../pictures/gavlmaleri/577018251_2910781915785151_8188054167916885180_n.jpg";
+import akryl1 from "../../pictures/akryl/SaveClip.App_683786116_18585972187040073_1057071494516079796_n.jpg";
+import akryl2 from "../../pictures/akryl/SaveClip.App_684774266_18585972205040073_4387325874114542_n.jpg";
+import akryl3 from "../../pictures/akryl/SaveClip.App_682057696_18585972196040073_8355171174749295794_n.jpg";
+import akryl4 from "../../pictures/akryl/SaveClip.App_683729000_18585972223040073_6423261687875563209_n.jpg";
+import akryl5 from "../../pictures/akryl/SaveClip.App_685338945_18585972175040073_8842928278408963749_n.jpg";
+import akryl6 from "../../pictures/akryl/SaveClip.App_686146454_18585972145040073_8021875368258416037_n.jpg";
+import akryl7 from "../../pictures/akryl/SaveClip.App_687816570_18585972214040073_8108546544926377081_n.jpg";
+import akryl8 from "../../pictures/akryl/SaveClip.App_688161706_18585972247040073_2246194363668941122_n.jpg";
+import akryl9 from "../../pictures/akryl/SaveClip.App_682715458_18585972235040073_1230198617766805431_n.jpg";
+import akryl10 from "../../pictures/akryl/SaveClip.App_683536704_18585972160040073_104415637630865332_n.jpg";
 
 export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Ida Holm — Visuel kunstner & poet" },
+      { title: "Emilie Lystberg" },
       {
         name: "description",
         content:
-          "Værker, udstillinger og poesi af den danske kunstner Ida Holm. Et levende arkiv af malerier, gavlmalerier og tekster.",
+          "Værker, udstillinger og poesi. Et levende arkiv af malerier, gavlmalerier og tekster.",
       },
     ],
   }),
@@ -28,20 +42,44 @@ const NAV: NavItem[] = [
   { id: "gavlmaleri", label: "gavlmaleri", year: "2025" },
   { id: "akryl", label: "akryl på lærred", year: "2025" },
   { id: "solskin", label: "solskin og tvivl", year: "2023" },
-  { id: "events", label: "aktuelle events og udstillinger" },
+  { id: "events", label: "udstillinger og events" },
   { id: "om", label: "om mig" },
   { id: "kontakt", label: "kontakt" },
 ];
 
 const DEFAULT_BG = "var(--butter)";
+const CURRENT_EVENTS = [
+  {
+    period: "Maj - Juli 2026",
+    title: "Akryl på lærred - Galleri Tese, Aarhus",
+    image: tesePoster,
+    imageAlt: "Plakat for Akryl på lærred - Galleri Tese, Aarhus",
+  },
+  {
+    period: "November 2024",
+    title: "Bogforum, København",
+    image: bogforum1,
+    imageAlt: "Bogforum, København plakat 1",
+  },
+];
 
 function Index() {
   const [bg, setBg] = useState(DEFAULT_BG);
   const [activeId, setActiveId] = useState<string>("intro");
+  const [activeEventIndex, setActiveEventIndex] = useState(0);
+  const activeEvent = CURRENT_EVENTS[activeEventIndex];
 
   const onEnter = useCallback((id: string, color: string) => {
     setActiveId(id);
     setBg(color);
+  }, []);
+
+  const showPreviousEvent = useCallback(() => {
+    setActiveEventIndex((prev) => Math.max(0, prev - 1));
+  }, []);
+
+  const showNextEvent = useCallback(() => {
+    setActiveEventIndex((prev) => Math.min(CURRENT_EVENTS.length - 1, prev + 1));
   }, []);
 
   useEffect(() => {
@@ -55,135 +93,107 @@ function Index() {
     <div id="top" className="min-h-screen">
       <Sidebar items={NAV} activeId={activeId} />
 
-      <main className="md:ml-72 lg:ml-80">
+      <main className="pt-16 md:pt-0 md:ml-72 lg:ml-80">
         {/* Intro */}
         <Section
           id="intro"
           bg={DEFAULT_BG}
           onEnter={onEnter}
-          variant="text"
-          body={
-            <>
-              <p className="font-serif italic text-sm uppercase tracking-[0.28em] not-italic text-muted-foreground">
-                — et arkiv
-              </p>
-              <p className="font-serif text-4xl md:text-6xl leading-[1.05] tracking-tight text-foreground">
-                Maleri, ord og det stille rum mellem dem.
-              </p>
-              <p className="text-base font-sans text-foreground/70 max-w-lg leading-[1.8]">
-                Ida Holm arbejder med farve som sprog og sprog som flade. Værker
-                fra 2018 til i dag, samlet som kapitler i en bog, der aldrig
-                helt bliver færdig.
-              </p>
-            </>
-          }
+          images={[
+            {
+              src: yellowTulip,
+              alt: "Gul tulipan på transparent baggrund",
+            },
+          ]}
         />
 
         <Section
           id="gavlmaleri"
           bg="var(--clay)"
           onEnter={onEnter}
-          eyebrow="værk · 01"
+          imageOnRight={false}
           title="Gavlmaleri"
-          caption="København NV, forår 2025 — akryl og mineralmaling på beton, ca. 14 × 9 m."
+          caption="København NV, 39 kvm"
           variant="fullscreen"
           images={[
             {
-              src: artwork1,
-              alt: "Gavlmaleri på betonvæg med blå og orange aftryk",
-              caption: "Foto: placeholder · dokumentation",
+              src: gavlmaleri1,
+              alt: "Gavlmaleri foto 1",
+            },
+            {
+              src: gavlmaleri2,
+              alt: "Gavlmaleri foto 2",
+            },
+            {
+              src: gavlmaleri3,
+              alt: "Gavlmaleri foto 3",
+            },
+            {
+              src: gavlmaleri4,
+              alt: "Gavlmaleri foto 4",
+            },
+            {
+              src: gavlmaleri5,
+              alt: "Gavlmaleri foto 5",
             },
           ]}
-          body={null}
-        />
-
-        <Section
-          id="gavlmaleri-text"
-          bg="var(--clay)"
-          onEnter={onEnter}
-          variant="split"
-          images={[{ src: artwork5, alt: "Detalje af gavlmaleri", aspect: "aspect-[4/5]" }]}
-          body={
-            <>
-              <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground font-sans">
-                proces
-              </p>
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Værket
-                blev til over fjorten dage i et kvarter, der allerede bar mange
-                stemmer. Maleriet lytter mere end det taler.
-              </p>
-              <p className="italic text-foreground/65">
-                “En væg er aldrig tom — den venter bare.”
-              </p>
-            </>
-          }
         />
 
         <Section
           id="akryl"
           bg="var(--rose)"
           onEnter={onEnter}
-          eyebrow="serie · 02"
+          imageOnRight
           title="Akryl på lærred"
-          caption="En serie på elleve værker udført i atelieret i Nordvest, vinter 2024 — forår 2025."
+          caption="80 X 100 cm. Akryl på lærred."
           variant="gallery"
           images={[
-            { src: artwork2, alt: "Akrylmaleri i koral og dyb grøn" },
-            { src: artwork4, alt: "Detalje, ultramarinblå pensselstrøg" },
-            { src: artwork3, alt: "Lyst gult værk, gennemsigtige lag" },
+            { src: akryl1, alt: "Akryl på lærred 1" },
+            { src: akryl2, alt: "Akryl på lærred 2" },
+            { src: akryl3, alt: "Akryl på lærred 3" },
+            { src: akryl4, alt: "Akryl på lærred 4" },
+            { src: akryl5, alt: "Akryl på lærred 5" },
+            { src: akryl6, alt: "Akryl på lærred 6" },
+            { src: akryl7, alt: "Akryl på lærred 7" },
+            { src: akryl8, alt: "Akryl på lærred 8" },
+            { src: akryl9, alt: "Akryl på lærred 9" },
+            { src: akryl10, alt: "Akryl på lærred 10" },
           ]}
+          body={
+            <p>
+              På nettet sælger vi os selv – frivilligt, på papiret – men praktisk
+              talt er der langt fra tale om samtykke. Virksomhederne udnytter
+              vores natur og de lever af vores afhængighed. Vi fratages vores
+              ungdom, fortrænger forgængeligheden, fokuserer på det forkerte og
+              vi opdager det for sent.
+              <br />
+              <br />
+              I en verden hvor vi (mere eller mindre) glædeligt sælger os selv,
+              vores drømme, ambitioner, og kærlighed til os selv, for bare korte
+              momenter af indbildt glæde – spørger jeg: Ville du også sælge dine venner?
+            </p>
+          }
         />
 
         <Section
           id="solskin"
           bg="var(--bone)"
           onEnter={onEnter}
-          eyebrow="værk · 03"
+          imageOnRight={false}
           title="Solskin og tvivl"
-          caption="2023 — akryl på lærred, 120 × 95 cm. Privat samling."
+          caption="Amanda Books, 2023"
           variant="spread"
           images={[
             {
-              src: artwork3,
-              alt: "Maleri i bløde gule toner",
-              caption: "Solskin og tvivl, 2023",
+              src: solskinOgTvivl,
+              alt: "Solskin og tvivl bogforside med citronmotiv",
             },
           ]}
           body={
-            <>
-              <p>
-                Lorem ipsum dolor sit amet. Dette værk handler om de to lys, der
-                eksisterer i samme rum: det varme, der tror på dagen, og det
-                kølige, der ved bedre.
-              </p>
-              <p className="italic">
-                Et sted mellem at åbne et vindue og at lukke en bog.
-              </p>
-            </>
-          }
-        />
-
-        <Section
-          id="solskin-poem"
-          bg="var(--bone)"
-          onEnter={onEnter}
-          variant="text"
-          body={
-            <>
-              <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground font-sans not-italic">
-                digt · ledsager til værket
-              </p>
-              <p>
-                jeg lagde gult<br />
-                ovenpå mere gult,<br />
-                indtil rummet glemte sit navn —
-              </p>
-              <p>
-                så satte jeg en grå linje<br />
-                for at huske det.
-              </p>
-            </>
+            <p>
+              Kan I huske min gule notesbog fra gymnasietiden? Den bliver nu
+              udgivet som digtsamlingen ‘Solskin og Tvivl’.
+            </p>
           }
         />
 
@@ -191,45 +201,55 @@ function Index() {
           id="events"
           bg="var(--sage)"
           onEnter={onEnter}
-          eyebrow="kalender"
-          title="Aktuelle events og udstillinger"
-          caption="Et udvalg af kommende og igangværende arbejder. Kontakt for fuld liste."
+          imageOnRight={false}
+          title="Udstillinger og events"
           variant="spread"
+          showImageNavigation={false}
           images={[
             {
-              src: artwork5,
-              alt: "Udstillingsrum med stort sort-hvidt værk",
-              caption: "Galleri Ø, installationsfoto",
+              src: activeEvent.image,
+              alt: activeEvent.imageAlt,
             },
           ]}
           body={
-            <ul className="space-y-6 font-sans text-base">
-              <li>
-                <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-                  maj — juni 2026
-                </p>
-                <p className="font-serif text-xl mt-1">
-                  Stille farver — Galleri Ø, København
-                </p>
-                <p className="text-foreground/65 text-sm mt-1">Soloudstilling</p>
-              </li>
-              <li>
-                <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-                  august 2026
-                </p>
-                <p className="font-serif text-xl mt-1">
-                  Nordlys — gruppeudstilling, Aarhus Kunsthal
-                </p>
-              </li>
-              <li>
-                <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-                  efterår 2026
-                </p>
-                <p className="font-serif text-xl mt-1">
-                  Bogudgivelse: «mellem ord og flade», Forlaget Placeholder
-                </p>
-              </li>
-            </ul>
+            <>
+              <p className="font-serif text-lg leading-snug">{activeEvent.title}</p>
+              <p className="font-sans text-xs uppercase tracking-[0.2em] text-foreground/70">
+                {activeEvent.period}
+              </p>
+              <div className="pt-3 relative h-12 w-full font-sans">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <p className="translate-y-[4px] text-[11px] uppercase tracking-[0.14em] text-muted-foreground tabular-nums text-center leading-none">
+                    {activeEventIndex + 1} / {CURRENT_EVENTS.length}
+                  </p>
+                </div>
+
+                {activeEventIndex > 0 ? (
+                  <button
+                    type="button"
+                    onClick={showPreviousEvent}
+                    className="absolute left-0 top-[46%] -translate-y-1/2 h-11 w-11 flex items-center justify-center text-4xl leading-none font-light text-foreground/40 hover:text-foreground/70 transition-colors"
+                    aria-label="Forrige event"
+                  >
+                    ‹
+                  </button>
+                ) : (
+                  <div className="absolute left-0 top-[46%] -translate-y-1/2 h-12 w-12" aria-hidden />
+                )}
+                {activeEventIndex < CURRENT_EVENTS.length - 1 ? (
+                  <button
+                    type="button"
+                    onClick={showNextEvent}
+                    className="absolute right-0 top-[46%] -translate-y-1/2 h-11 w-11 flex items-center justify-center text-4xl leading-none font-light text-foreground/40 hover:text-foreground/70 transition-colors"
+                    aria-label="Næste event"
+                  >
+                    ›
+                  </button>
+                ) : (
+                  <div className="absolute right-0 top-[46%] -translate-y-1/2 h-12 w-12" aria-hidden />
+                )}
+              </div>
+            </>
           }
         />
 
@@ -237,30 +257,27 @@ function Index() {
           id="om"
           bg="var(--sky)"
           onEnter={onEnter}
-          eyebrow="biografi"
+          imageOnRight
           title="Om mig"
           variant="split"
           images={[
             {
-              src: portrait,
+              src: emiliePortrait,
               alt: "Portræt af kunstneren i atelieret",
-              caption: "Atelier, Nordvest",
             },
           ]}
           body={
             <>
               <p>
-                Ida Holm (f. 1989) er en dansk visuel kunstner og poet, baseret
-                i København. Hun arbejder i krydsfeltet mellem maleri,
-                gavlkunst og skrevet sprog.
+                Emilie Lystberg (f. 2000) blev som 19-årig student fra Rungsted
+                Gymnasium. Siden da har hun været bosat i København og Østrig,
+                hvor hun arbejder som ski-instruktør.
               </p>
               <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                Uddannet fra Det Kongelige Danske Kunstakademi, 2017. Værker i
-                offentlige og private samlinger i Danmark, Sverige og Tyskland.
-              </p>
-              <p className="italic text-foreground/65">
-                «Jeg maler for at finde ud af, hvad jeg ikke kan sige.»
+                Emilie Lystberg har altid været nysgerrig på verden og søger at
+                finde svar på livets små og store spørgsmål. Hun har sin lille,
+                solskinsgule notesbog med sig overalt og skriver spontane digte,
+                når ordene melder sig.
               </p>
             </>
           }
@@ -270,40 +287,18 @@ function Index() {
           id="kontakt"
           bg="var(--butter)"
           onEnter={onEnter}
-          eyebrow="kontakt"
+          imageOnRight={false}
           title="Skriv til mig"
           variant="text"
           body={
             <>
-              <p className="font-serif text-foreground/85">
-                For henvendelser om værker, udstillinger, gavlmalerier eller
-                samtaler — gerne en mail.
-              </p>
               <div className="space-y-3 text-base font-sans not-italic">
                 <p>
-                  <span className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground block mb-1">
-                    e-mail
-                  </span>
-                  <a href="mailto:hej@idaholm.dk" className="font-serif text-2xl underline-offset-4 hover:underline">
-                    hej@idaholm.dk
+                  <a href="mailto:emilie@lystberg.dk" className="font-serif text-2xl underline-offset-4 hover:underline">
+                    emilie@lystberg.dk
                   </a>
                 </p>
-                <p>
-                  <span className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground block mb-1">
-                    atelier
-                  </span>
-                  <span className="font-serif text-xl">Frederikssundsvej, 2400 København NV</span>
-                </p>
-                <p>
-                  <span className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground block mb-1">
-                    instagram
-                  </span>
-                  <span className="font-serif text-xl">@idaholm.atelier</span>
-                </p>
               </div>
-              <p className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground pt-12">
-                tak fordi du kiggede forbi
-              </p>
             </>
           }
         />

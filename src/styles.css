@@ -69,13 +69,13 @@
 
 :root {
   --radius: 0.25rem;
-  /* Section mood palette — warm butter yellow default + per-section tones */
-  --butter: oklch(0.953 0.055 95);
-  --bone: oklch(0.962 0.018 80);
-  --rose: oklch(0.905 0.045 25);
-  --sage: oklch(0.9 0.04 145);
-  --sky: oklch(0.9 0.045 230);
-  --clay: oklch(0.87 0.06 55);
+  /* Section palette — saturated pop colors */
+  --butter: oklch(0.9 0.2 105);
+  --bone: oklch(0.93 0.16 85);
+  --rose: oklch(0.78 0.24 20);
+  --sage: oklch(0.82 0.22 150);
+  --sky: oklch(0.78 0.2 245);
+  --clay: oklch(0.8 0.22 40);
   --ink: oklch(0.22 0.02 80);
 
   --background: var(--butter);

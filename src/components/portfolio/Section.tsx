@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 export type SectionImage = {
   src: string;
@@ -16,9 +16,14 @@ export interface SectionProps {
   title?: string;
   caption?: string;
   body?: ReactNode;
+  bodyByImage?: ReactNode[];
   images?: SectionImage[];
   /** Layout variant for image/text composition */
   variant?: "fullscreen" | "spread" | "gallery" | "text" | "split";
+  /** Places image column on right side at md+ sizes */
+  imageOnRight?: boolean;
+  /** Hide built-in image next/prev controls */
+  showImageNavigation?: boolean;
   onEnter?: (id: string, bg: string) => void;
 }
 
@@ -29,11 +34,36 @@ export function Section({
   title,
   caption,
   body,
+  bodyByImage,
   images = [],
   variant = "spread",
+  imageOnRight = false,
+  showImageNavigation = true,
   onEnter,
 }: SectionProps) {
   const ref = useRef<HTMLElement | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const currentImage = images[activeImageIndex] ?? images[0];
+  const currentBody = bodyByImage?.[activeImageIndex] ?? body;
+  const hasTextContent = Boolean(eyebrow || title || caption || currentBody);
+  const hasImage = Boolean(currentImage);
+
+  const showPrevImage = () => {
+    if (images.length <= 1) return;
+    setActiveImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const showNextImage = () => {
+    if (images.length <= 1) return;
+    setActiveImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  useEffect(() => {
+    setActiveImageIndex((prev) => {
+      if (images.length === 0) return 0;
+      return Math.min(prev, images.length - 1);
+    });
+  }, [images.length]);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -58,125 +88,82 @@ export function Section({
     <section
       ref={ref}
       id={id}
-      className="relative min-h-screen w-full px-8 md:px-16 lg:px-24 py-32 md:py-40 flex flex-col justify-center"
+      className="relative min-h-screen w-full px-5 sm:px-6 md:px-16 lg:px-24 py-24 sm:py-28 md:py-40 flex flex-col justify-center"
     >
-      {(eyebrow || title || caption) && (
-        <header className="fade-up max-w-3xl mb-16 md:mb-24">
-          {eyebrow && (
-            <p className="text-[11px] uppercase tracking-[0.32em] text-muted-foreground mb-6">
-              {eyebrow}
-            </p>
-          )}
-          {title && (
-            <h2 className="font-serif text-4xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tight">
-              {title}
-            </h2>
-          )}
-          {caption && (
-            <p className="mt-6 font-serif italic text-lg text-foreground/70 max-w-xl">
-              {caption}
-            </p>
-          )}
-        </header>
-      )}
-
-      {variant === "fullscreen" && images[0] && (
-        <figure className="fade-up mx-auto w-full max-w-5xl">
-          <img
-            src={images[0].src}
-            alt={images[0].alt}
-            loading="lazy"
-            className="w-full h-auto object-cover shadow-[0_30px_80px_-30px_rgba(0,0,0,0.25)]"
-          />
-          {images[0].caption && (
-            <figcaption className="mt-4 text-xs uppercase tracking-[0.24em] text-muted-foreground">
-              {images[0].caption}
-            </figcaption>
-          )}
-        </figure>
-      )}
-
-      {variant === "spread" && (
-        <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-start">
-          {images[0] && (
-            <figure className={`fade-up md:col-span-7 ${images[0].aspect ?? ""}`}>
+      <div
+        className={
+          hasImage && hasTextContent
+            ? "grid md:grid-cols-12 gap-8 md:gap-16 items-center"
+            : "flex justify-center"
+        }
+      >
+        {hasImage && (
+          <div
+            className={`fade-up ${hasTextContent ? "md:col-span-7" : "w-full max-w-3xl"} ${
+              hasTextContent && imageOnRight ? "md:order-2" : "md:order-1"
+            }`}
+          >
+            <figure className={currentImage.aspect ?? ""}>
               <img
-                src={images[0].src}
-                alt={images[0].alt}
+                src={currentImage.src}
+                alt={currentImage.alt}
                 loading="lazy"
-                className="w-full h-auto object-cover"
+                className="w-full h-[52vh] sm:h-[60vh] md:h-[80vh] object-contain"
               />
-              {images[0].caption && (
+              {currentImage.caption && (
                 <figcaption className="mt-3 text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                  {images[0].caption}
+                  {currentImage.caption}
                 </figcaption>
               )}
             </figure>
-          )}
-          {body && (
-            <div className="fade-up md:col-span-4 md:col-start-9 md:pt-24 font-serif text-lg leading-[1.7] text-foreground/80 space-y-5">
-              {body}
-            </div>
-          )}
-        </div>
-      )}
 
-      {variant === "split" && (
-        <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
-          {images[0] && (
-            <figure className="fade-up">
-              <img
-                src={images[0].src}
-                alt={images[0].alt}
-                loading="lazy"
-                className="w-full h-auto object-cover grayscale"
-              />
-              {images[0].caption && (
-                <figcaption className="mt-3 text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                  {images[0].caption}
-                </figcaption>
-              )}
-            </figure>
-          )}
-          {body && (
-            <div className="fade-up font-serif text-lg leading-[1.8] text-foreground/85 space-y-5 max-w-md">
-              {body}
-            </div>
-          )}
-        </div>
-      )}
+            {showImageNavigation && images.length > 1 && (
+              <div className="mt-6 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={showPrevImage}
+                  className="px-4 py-2 border border-foreground/40 font-sans text-xs uppercase tracking-[0.18em]"
+                  aria-label="Forrige billede"
+                >
+                  ← Forrige
+                </button>
+                <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground font-sans">
+                  {activeImageIndex + 1} / {images.length}
+                </p>
+                <button
+                  type="button"
+                  onClick={showNextImage}
+                  className="px-4 py-2 border border-foreground/40 font-sans text-xs uppercase tracking-[0.18em]"
+                  aria-label="Næste billede"
+                >
+                  Næste →
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
-      {variant === "gallery" && images.length > 0 && (
-        <div className="grid md:grid-cols-12 gap-6 md:gap-10">
-          {images.map((img, i) => (
-            <figure
-              key={i}
-              className={[
-                "fade-up",
-                i % 3 === 0 ? "md:col-span-7" : i % 3 === 1 ? "md:col-span-5 md:mt-24" : "md:col-span-6 md:col-start-4",
-              ].join(" ")}
-            >
-              <img
-                src={img.src}
-                alt={img.alt}
-                loading="lazy"
-                className="w-full h-auto object-cover"
-              />
-              {img.caption && (
-                <figcaption className="mt-3 text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                  {img.caption}
-                </figcaption>
-              )}
-            </figure>
-          ))}
-        </div>
-      )}
-
-      {variant === "text" && body && (
-        <div className="fade-up max-w-2xl mx-auto font-serif text-2xl md:text-3xl leading-[1.5] text-foreground/85 space-y-8">
-          {body}
-        </div>
-      )}
+        {hasTextContent && (
+          <aside
+            className={`fade-up font-serif text-base md:text-lg leading-[1.7] text-foreground/85 space-y-5 md:space-y-6 ${
+              hasImage ? "md:col-span-5" : "w-full max-w-3xl"
+            } ${hasImage && imageOnRight ? "md:order-1" : "md:order-2"}`}
+          >
+            {eyebrow && (
+              <p className="text-[11px] uppercase tracking-[0.32em] text-muted-foreground font-sans">
+                {eyebrow}
+              </p>
+            )}
+            {title && (
+              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight">
+                {title}
+              </h2>
+            )}
+            {caption && <p className="font-serif italic text-foreground/70">{caption}</p>}
+            {currentBody && <div className="space-y-5 text-[0.94rem]">{currentBody}</div>}
+          </aside>
+        )}
+      </div>
     </section>
   );
 }

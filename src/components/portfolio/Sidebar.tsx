@@ -17,14 +17,31 @@ export function Sidebar({ items, activeId }: Props) {
   return (
     <>
       {/* Mobile top bar */}
-      <header className="md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-between px-6 py-4 bg-background/80 backdrop-blur-sm border-b border-border/40">
-        <a href="#top" className="font-serif text-lg italic">ida holm</a>
+      <header className="md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-end px-4 py-3 bg-background/80 backdrop-blur-sm border-b border-border/40">
         <button
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle menu"
-          className="text-xs uppercase tracking-[0.2em]"
+          className="h-10 w-10 inline-flex items-center justify-center text-foreground/80 hover:text-foreground transition-colors"
         >
-          {open ? "luk" : "menu"}
+          {open ? (
+            <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
+              <path
+                d="M6 6L18 18M18 6L6 18"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
+              <path
+                d="M4 7H20M4 12H20M4 17H20"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+          )}
         </button>
       </header>
 
@@ -32,8 +49,9 @@ export function Sidebar({ items, activeId }: Props) {
         className={[
           "fixed z-30 inset-y-0 left-0 w-full md:w-72 lg:w-80",
           "bg-background/85 backdrop-blur-md md:bg-transparent md:backdrop-blur-none",
-          "px-10 md:px-12 py-16 md:py-14",
+          "px-6 sm:px-8 md:px-12 pt-24 pb-10 md:py-14",
           "flex flex-col justify-between",
+          "overflow-y-auto",
           "transition-transform duration-500 ease-out",
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         ].join(" ")}
@@ -41,11 +59,8 @@ export function Sidebar({ items, activeId }: Props) {
         <div>
           <a href="#top" className="block">
             <h1 className="font-serif text-3xl leading-[1.05] tracking-tight">
-              ida<br />holm
+              emilie<br />lystberg
             </h1>
-            <p className="mt-3 text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
-              visuel kunstner<br />&amp; poet
-            </p>
           </a>
         </div>
 
@@ -55,10 +70,7 @@ export function Sidebar({ items, activeId }: Props) {
               const active = activeId === item.id;
               return (
                 <li key={item.id}>
-                  <a
-                    href={`#${item.id}`}
-                    className="group block"
-                  >
+                  <a href={`#${item.id}`} className="group block py-1.5">
                     <div className="flex items-baseline gap-3">
                       <span
                         aria-hidden
@@ -88,9 +100,6 @@ export function Sidebar({ items, activeId }: Props) {
           </ul>
         </nav>
 
-        <div className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
-          © {new Date().getFullYear()} — Atelier København
-        </div>
       </aside>
     </>
   );
