@@ -44,6 +44,24 @@ export function Sidebar({ items, activeId }: Props) {
     setOpen(false);
   }, [activeId]);
 
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, "");
+    if (!hash) return;
+
+    const target = document.getElementById(hash);
+    if (!target) return;
+
+    const alignToCenter = () => {
+      const correctedTop = getCenteredTop(target);
+      if (Math.abs(window.scrollY - correctedTop) > 2) {
+        window.scrollTo({ top: correctedTop, behavior: "auto" });
+      }
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(alignToCenter));
+    window.setTimeout(alignToCenter, 450);
+  }, []);
+
   return (
     <>
       {/* Mobile top bar */}
