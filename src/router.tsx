@@ -5,7 +5,8 @@ import { routeTree } from "./routeTree.gen";
 const normalizeBasepath = (value: string): string => {
   if (!value || value === "/") return "/";
   const trimmed = value.startsWith("/") ? value : `/${value}`;
-  return trimmed.replace(/\/+$/, "");
+  const withoutTrailing = trimmed.replace(/\/+$/, "");
+  return `${withoutTrailing}/`;
 };
 
 const inferBasepath = (): string => {
