@@ -45,6 +45,7 @@ export function Section({
   onEnter,
 }: SectionProps) {
   const ref = useRef<HTMLElement | null>(null);
+  const preloadedSourcesRef = useRef<Set<string>>(new Set());
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const currentImage = images[activeImageIndex] ?? images[0];
   const currentBody = bodyByImage?.[activeImageIndex] ?? body;
@@ -70,6 +71,18 @@ export function Section({
       return Math.min(prev, images.length - 1);
     });
   }, [images.length]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || images.length <= 1) return;
+
+    for (const image of images) {
+      if (preloadedSourcesRef.current.has(image.src)) continue;
+      const preloadImage = new Image();
+      preloadImage.decoding = "async";
+      preloadImage.src = image.src;
+      preloadedSourcesRef.current.add(image.src);
+    }
+  }, [images]);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -115,7 +128,7 @@ export function Section({
               <img
                 src={currentImage.src}
                 alt={currentImage.alt}
-                loading="lazy"
+                loading={images.length > 1 ? "eager" : "lazy"}
                 className="w-full h-[52vh] sm:h-[60vh] md:h-[80vh] object-contain"
               />
               {currentImage.caption && (
