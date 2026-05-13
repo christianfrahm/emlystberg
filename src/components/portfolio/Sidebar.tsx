@@ -9,6 +9,7 @@ interface Props {
 
 export function Sidebar({ items, activeId }: Props) {
   const [open, setOpen] = useState(false);
+  const isMobileViewport = () => window.matchMedia("(max-width: 767px)").matches;
 
   const getCenteredTop = (target: HTMLElement) => {
     const rect = target.getBoundingClientRect();
@@ -25,12 +26,16 @@ export function Sidebar({ items, activeId }: Props) {
     const target = document.getElementById(targetId);
     if (!target) return;
 
-    const targetTop = getCenteredTop(target);
+    const targetTop = isMobileViewport()
+      ? target.getBoundingClientRect().top + window.scrollY
+      : getCenteredTop(target);
     window.scrollTo({ top: targetTop, behavior: "smooth" });
     window.history.replaceState(null, "", `#${targetId}`);
 
     const settleAndCorrect = () => {
-      const correctedTop = getCenteredTop(target);
+      const correctedTop = isMobileViewport()
+        ? target.getBoundingClientRect().top + window.scrollY
+        : getCenteredTop(target);
       if (Math.abs(window.scrollY - correctedTop) > 2) {
         window.scrollTo({ top: correctedTop, behavior: "auto" });
       }
@@ -47,7 +52,9 @@ export function Sidebar({ items, activeId }: Props) {
     const target = document.getElementById(hash);
     if (!target) return;
 
-    const correctedTop = getCenteredTop(target);
+    const correctedTop = isMobileViewport()
+      ? target.getBoundingClientRect().top + window.scrollY
+      : getCenteredTop(target);
     if (Math.abs(window.scrollY - correctedTop) > 2) {
       window.scrollTo({ top: correctedTop, behavior: "auto" });
     }
