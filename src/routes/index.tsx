@@ -49,7 +49,7 @@ const NAV: NavItem[] = [
 
 const DEFAULT_BG = "var(--butter)";
 const DEFAULT_THEME_COLOR = "#eadf35";
-const MENU_THEME_COLOR = "#6b7280";
+const MENU_THEME_COLOR = DEFAULT_THEME_COLOR;
 const SECTION_BG: Record<string, string> = {
   intro: DEFAULT_BG,
   gavlmaleri: "var(--clay)",
@@ -160,7 +160,7 @@ function Index() {
       <Sidebar
         items={NAV}
         activeId={activeId}
-        backgroundColor={bg}
+        backgroundColor={DEFAULT_BG}
         onMenuClose={syncSectionFromViewport}
         onMenuStateChange={setIsMenuOpen}
       />
