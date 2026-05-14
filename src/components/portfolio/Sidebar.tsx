@@ -103,9 +103,9 @@ export function Sidebar({
 
   return (
     <>
-      {/* Mobile top bar */}
+      {/* Mobile menu toggle */}
       <header
-        className="md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-end px-4 pb-3 bg-[rgba(107,114,128,0.1)] backdrop-blur-sm border-b border-white/20"
+        className="md:hidden fixed top-0 right-0 z-[60] flex items-center justify-end px-4 pb-3"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)" }}
       >
         <button
@@ -119,7 +119,7 @@ export function Sidebar({
             })
           }
           aria-label="Toggle menu"
-          className="h-10 w-10 inline-flex items-center justify-center text-foreground/80 hover:text-foreground transition-colors"
+          className="h-11 w-11 inline-flex items-center justify-center text-foreground/80 hover:text-foreground transition-colors"
         >
           {open ? (
             <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
@@ -147,6 +147,7 @@ export function Sidebar({
         className={[
           "fixed z-50 inset-y-0 left-0 w-full md:w-72 lg:w-80 md:z-30",
           "mobile-menu-panel backdrop-blur-md md:backdrop-blur-none",
+          "h-dvh min-h-dvh md:h-auto md:min-h-0",
           "px-6 sm:px-8 md:px-12 pt-24 md:py-14",
           "flex flex-col justify-between",
           "overflow-y-auto",
