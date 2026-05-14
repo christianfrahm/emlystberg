@@ -310,16 +310,6 @@ function Index() {
                 <p>{CURRENT_EVENT.description}</p>
                 <p>Emilie er aktuel med værkserien: Må man sælge sine venner</p>
                 <p>
-                  På nettet sælger vi os selv – frivilligt, på papiret – men praktisk talt er der
-                  langt fra tale om samtykke. Virksomhederne udnytter vores natur og de lever af
-                  vores afhængighed. Vi fratages vores ungdom, fortrænger forgængeligheden og vi
-                  opdager det for sent.
-                </p>
-                <p>
-                  I en verden hvor vi uden at tøve sælger os selv, spørger Emilie Lystberg, om vi
-                  også ville sælge vores venner?
-                </p>
-                <p>
                   Kurator Sarah-Kamille Teib, beskriver Emilies værkserie som: "Cute, art-pop,
                   cartoonish og readymade- konceptuel stor værkserie, med mennesketyper vi kender i
                   mange farver."
@@ -359,13 +349,12 @@ function Index() {
             body={
               <p>
                 På nettet sælger vi os selv – frivilligt, på papiret – men praktisk talt er der
-                langt fra tale om samtykke. Virksomhederne udnytter vores natur og de lever af vores
-                afhængighed. Vi fratages vores ungdom, fortrænger forgængeligheden, fokuserer på det
-                forkerte og vi opdager det for sent.
+                  langt fra tale om samtykke. Virksomhederne udnytter vores natur og de lever af
+                  vores afhængighed. Vi fratages vores ungdom, fortrænger forgængeligheden og vi
+                  opdager det for sent.
                 <br />
-                <br />I en verden hvor vi (mere eller mindre) glædeligt sælger os selv, vores
-                drømme, ambitioner, og kærlighed til os selv, for bare korte momenter af indbildt
-                glæde – spørger jeg: Ville du også sælge dine venner?
+                <br />I en verden hvor vi uden at tøve sælger os selv, spørger Emilie Lystberg, om vi
+                også ville sælge vores venner?
               </p>
             }
           />

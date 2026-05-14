@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 export type SectionImage = {
   src: string;
@@ -54,24 +54,56 @@ export function Section({
   naturalHeightOnMobile = false,
 }: SectionProps) {
   const ref = useRef<HTMLElement | null>(null);
-  const preloadedSourcesRef = useRef<Set<string>>(new Set());
+  const loadedSourcesRef = useRef<Set<string>>(new Set());
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const currentImage = images[activeImageIndex] ?? images[0];
   const currentBody = bodyByImage?.[activeImageIndex] ?? body;
-  const imageTransitionKey = transitionKey ?? activeImageIndex;
   const shouldAnimateBody = transitionKey !== undefined || Boolean(bodyByImage);
   const bodyTransitionKey = transitionKey ?? activeImageIndex;
+  const imageSrcFingerprint = images.map((image) => image.src).join("|");
+  const preloadFingerprint = preloadImageSources?.join("|") ?? "";
   const hasTextContent = Boolean(eyebrow || title || caption || currentBody);
   const hasImage = Boolean(currentImage);
 
+  const loadImage = useCallback((src: string) => {
+    if (typeof window === "undefined") return Promise.resolve();
+    if (loadedSourcesRef.current.has(src)) return Promise.resolve();
+
+    return new Promise<void>((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        void (async () => {
+          try {
+            if ("decode" in img) await img.decode();
+          } catch {
+            /* decode can reject for unsupported formats; image may still paint */
+          }
+          loadedSourcesRef.current.add(src);
+          resolve();
+        })();
+      };
+      img.onerror = () => {
+        loadedSourcesRef.current.add(src);
+        resolve();
+      };
+      img.src = src;
+    });
+  }, []);
+
   const showPrevImage = () => {
     if (images.length <= 1) return;
-    setActiveImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    const next = (activeImageIndex - 1 + images.length) % images.length;
+    const nextSrc = images[next]?.src;
+    if (!nextSrc) return;
+    void loadImage(nextSrc).then(() => setActiveImageIndex(next));
   };
 
   const showNextImage = () => {
     if (images.length <= 1) return;
-    setActiveImageIndex((prev) => (prev + 1) % images.length);
+    const next = (activeImageIndex + 1) % images.length;
+    const nextSrc = images[next]?.src;
+    if (!nextSrc) return;
+    void loadImage(nextSrc).then(() => setActiveImageIndex(next));
   };
 
   useEffect(() => {
@@ -82,19 +114,19 @@ export function Section({
   }, [images.length]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
     const sources = preloadImageSources ?? images.map((image) => image.src);
-    if (sources.length <= 1) return;
+    if (sources.length === 0) return;
 
     for (const source of sources) {
-      if (preloadedSourcesRef.current.has(source)) continue;
-      const preloadImage = new Image();
-      preloadImage.decoding = "async";
-      preloadImage.src = source;
-      preloadedSourcesRef.current.add(source);
+      void loadImage(source);
     }
-  }, [images, preloadImageSources]);
+  }, [imageSrcFingerprint, preloadFingerprint, loadImage]); // eslint-disable-line react-hooks/exhaustive-deps -- fingerprints replace unstable array refs
+
+  useEffect(() => {
+    const src = currentImage?.src;
+    if (!src) return;
+    void loadImage(src);
+  }, [currentImage?.src, loadImage]);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -142,14 +174,12 @@ export function Section({
               hasTextContent && imageOnRight ? "md:order-2" : "md:order-1"
             }`}
           >
-            <figure
-              key={`image-${id}-${imageTransitionKey}`}
-              className={`${currentImage.aspect ?? ""} content-swap`}
-            >
+            <figure className={currentImage.aspect ?? ""}>
               <img
                 src={currentImage.src}
                 alt={currentImage.alt}
                 loading={images.length > 1 || transitionKey !== undefined ? "eager" : "lazy"}
+                decoding="async"
                 className="w-full h-[52vh] sm:h-[60vh] md:h-[80vh] object-contain"
               />
               {currentImage.caption && (
