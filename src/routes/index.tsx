@@ -117,8 +117,10 @@ function Index() {
   }, []);
 
   useEffect(() => {
+    document.documentElement.style.backgroundColor = bg;
     document.body.style.backgroundColor = bg;
     return () => {
+      document.documentElement.style.backgroundColor = "";
       document.body.style.backgroundColor = "";
     };
   }, [bg]);
@@ -168,7 +170,7 @@ function Index() {
   }, [activeId]);
 
   return (
-    <div id="top" className="min-h-screen">
+    <div id="top" className="min-h-screen bg-background">
       <Sidebar
         items={NAV}
         activeId={activeId}
