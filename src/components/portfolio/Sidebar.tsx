@@ -103,61 +103,17 @@ export function Sidebar({
 
   return (
     <>
-      {/* Mobile menu toggle */}
-      <header
-        className="md:hidden fixed top-0 right-0 z-[60] flex items-center justify-end px-4 pb-3"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)" }}
-      >
-        <button
-          onClick={() =>
-            setOpen((v) => {
-              const next = !v;
-              if (!next) {
-                notifyMenuClosed();
-              }
-              return next;
-            })
-          }
-          aria-label="Toggle menu"
-          className="h-11 w-11 inline-flex items-center justify-center text-foreground/80 hover:text-foreground transition-colors"
-        >
-          {open ? (
-            <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
-              <path
-                d="M6 6L18 18M18 6L6 18"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
-              <path
-                d="M4 7H20M4 12H20M4 17H20"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-            </svg>
-          )}
-        </button>
-      </header>
-
       <aside
         className={[
-          "fixed z-50 inset-y-0 left-0 w-full md:w-72 lg:w-80 md:z-30",
-          "mobile-menu-panel backdrop-blur-md md:backdrop-blur-none",
-          "h-dvh min-h-dvh md:h-auto md:min-h-0",
-          "px-6 sm:px-8 md:px-12 pt-24 md:py-14",
-          "flex flex-col justify-between",
+          "hidden md:fixed md:inset-y-0 md:left-0 md:z-30 md:flex md:w-72 lg:w-80",
+          "mobile-menu-panel",
+          "md:px-12 md:py-14",
+          "flex-col justify-between",
           "overflow-y-auto",
-          "transition-opacity md:transition-transform duration-500 ease-out",
-          open ? "opacity-100" : "opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto",
         ].join(" ")}
         style={
           {
             "--mobile-menu-background": backgroundColor,
-            paddingBottom: "calc(env(safe-area-inset-bottom) + 2.5rem)",
           } as CSSProperties
         }
       >
