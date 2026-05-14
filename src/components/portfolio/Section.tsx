@@ -13,7 +13,7 @@ export interface SectionProps {
   /** CSS color (use var(--xxx)) used as the section background while in view */
   bg: string;
   eyebrow?: string;
-  title?: string;
+  title?: ReactNode;
   caption?: string;
   body?: ReactNode;
   bodyByImage?: ReactNode[];
@@ -29,6 +29,10 @@ export interface SectionProps {
   /** Additional image URLs to preload for smooth transitions */
   preloadImageSources?: string[];
   onEnter?: (id: string, bg: string) => void;
+  /** Replaces default vertical padding when set (e.g. tighter intro on mobile) */
+  sectionClassName?: string;
+  /** Below md: no min-screen height, content starts from top so e.g. menu + bio fit together */
+  naturalHeightOnMobile?: boolean;
 }
 
 export function Section({
@@ -46,6 +50,8 @@ export function Section({
   transitionKey,
   preloadImageSources,
   onEnter,
+  sectionClassName,
+  naturalHeightOnMobile = false,
 }: SectionProps) {
   const ref = useRef<HTMLElement | null>(null);
   const preloadedSourcesRef = useRef<Set<string>>(new Set());
@@ -115,7 +121,13 @@ export function Section({
     <section
       ref={ref}
       id={id}
-      className="relative min-h-screen w-full px-5 sm:px-6 md:px-16 lg:px-24 py-24 sm:py-28 md:py-40 flex flex-col justify-center"
+      className={[
+        "relative w-full px-5 sm:px-6 md:px-16 lg:px-24 flex flex-col",
+        naturalHeightOnMobile
+          ? "max-md:min-h-0 max-md:justify-start md:min-h-screen md:justify-center"
+          : "min-h-screen justify-center",
+        sectionClassName ?? "py-24 sm:py-28 md:py-40",
+      ].join(" ")}
     >
       <div
         className={
@@ -130,7 +142,10 @@ export function Section({
               hasTextContent && imageOnRight ? "md:order-2" : "md:order-1"
             }`}
           >
-            <figure key={`image-${id}-${imageTransitionKey}`} className={`${currentImage.aspect ?? ""} content-swap`}>
+            <figure
+              key={`image-${id}-${imageTransitionKey}`}
+              className={`${currentImage.aspect ?? ""} content-swap`}
+            >
               <img
                 src={currentImage.src}
                 alt={currentImage.alt}
@@ -138,7 +153,7 @@ export function Section({
                 className="w-full h-[52vh] sm:h-[60vh] md:h-[80vh] object-contain"
               />
               {currentImage.caption && (
-                <figcaption className="mt-3 text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                <figcaption className="mt-3 max-w-3xl whitespace-pre-line text-xs leading-relaxed text-muted-foreground">
                   {currentImage.caption}
                 </figcaption>
               )}

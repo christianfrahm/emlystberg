@@ -78,7 +78,7 @@
   --clay: oklch(0.8 0.22 40);
   --ink: oklch(0.22 0.02 80);
 
-  --background: var(--butter);
+  --background: var(--bone);
   --foreground: var(--ink);
   --card: var(--bone);
   --card-foreground: var(--ink);

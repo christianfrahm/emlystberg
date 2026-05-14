@@ -24,6 +24,10 @@ export function Sidebar({
   }, [onMenuClose]);
 
   const getCenteredTop = useCallback((target: HTMLElement) => {
+    if (target.dataset.scrollAlign === "start") {
+      return target.getBoundingClientRect().top + window.scrollY;
+    }
+
     const rect = target.getBoundingClientRect();
     const absoluteTop = rect.top + window.scrollY;
     const centeredTop = absoluteTop + Math.max(0, (rect.height - window.innerHeight) / 2);
@@ -101,8 +105,60 @@ export function Sidebar({
     };
   }, [alignHashTargetToCenter]);
 
+  const scrollToTopForMenu = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.history.replaceState(null, "", "#top");
+    notifyMenuClosed();
+  }, [notifyMenuClosed]);
+
   return (
     <>
+      <button
+        type="button"
+        onClick={scrollToTopForMenu}
+        aria-label="Gå til top og vis menu"
+        className="md:hidden fixed right-0 top-0 z-50 inline-flex h-11 w-11 items-center justify-center text-foreground/75 hover:text-foreground transition-colors"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.25rem)" }}
+      >
+        <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
+          <path
+            d="M4 7H20M4 12H20M4 17H20"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+        </svg>
+      </button>
+
+      <nav
+        aria-label="Afsnit"
+        className="md:hidden w-full px-5 pb-8 pr-16 pt-[calc(env(safe-area-inset-top)+5rem)]"
+      >
+        <ul className="space-y-7 font-serif text-lg leading-snug tracking-tight">
+          {items.map((item) => {
+            const active = activeId === item.id;
+            return (
+              <li key={item.id}>
+                <a
+                  href={`#${item.id}`}
+                  className={[
+                    "block py-0.5 transition-colors",
+                    active ? "text-foreground" : "text-foreground/55",
+                  ].join(" ")}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    scrollWithOffset(item.id);
+                    notifyMenuClosed();
+                  }}
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
       <aside
         className={[
           "hidden md:fixed md:inset-y-0 md:left-0 md:z-30 md:flex md:w-72 lg:w-80",

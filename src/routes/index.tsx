@@ -1,13 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Sidebar, type NavItem } from "@/components/portfolio/Sidebar";
 import { Section } from "@/components/portfolio/Section";
 
-import emiliePortrait from "../../pictures/om mig/AB Emilie Lystberg FORFATTER.jpg";
-import yellowTulip from "../../pictures/forside/Yellow_Tulip_PNG_Transparent_Clipart.png";
 import solskinOgTvivl from "../../pictures/solskin og tvivl/solskin-og-tvivl_635344_1.jpg";
 import tesePoster from "../../pictures/events/tese/SnapInsta.to_670552270_17921748189322817_6741333732493793503_n.jpg";
-import bogforum1 from "../../pictures/events/bogforum/SnapInsta.to_655796800_18085849037254740_5006557111501421844_n.jpg";
+import koi from "../../pictures/koi/koi.jpg";
 import gavlmaleri1 from "../../pictures/gavlmaleri/575183774_2910781842451825_8014620892406338350_n.jpg";
 import gavlmaleri2 from "../../pictures/gavlmaleri/576400471_2910781879118488_4065438245366497215_n.jpg";
 import gavlmaleri3 from "../../pictures/gavlmaleri/576469770_2910781889118487_3309273332169913671_n.jpg";
@@ -39,69 +37,83 @@ export const Route = createFileRoute("/")({
 });
 
 const NAV: NavItem[] = [
-  { id: "gavlmaleri", label: "gavlmaleri", year: "2025" },
-  { id: "akryl", label: "akryl på lærred", year: "2025" },
-  { id: "solskin", label: "solskin og tvivl", year: "2023" },
-  { id: "events", label: "udstillinger og events" },
-  { id: "om", label: "om mig" },
-  { id: "kontakt", label: "kontakt" },
+  { id: "litteratur", label: "litteratur" },
+  { id: "kunst", label: "kunst" },
+  { id: "aktuelt", label: "aktuelt" },
+  { id: "tilgaengelige-vaerker", label: "tilgængelige værker" },
 ];
 
-const DEFAULT_BG = "var(--butter)";
+const DEFAULT_BG = "var(--bone)";
 const DEFAULT_THEME_COLOR = "#eadf35";
 const MENU_THEME_COLOR = DEFAULT_THEME_COLOR;
 const SECTION_BG: Record<string, string> = {
   intro: DEFAULT_BG,
-  gavlmaleri: "var(--clay)",
-  akryl: "var(--rose)",
-  solskin: "var(--bone)",
-  events: "var(--sage)",
-  om: "var(--sky)",
-  kontakt: "var(--butter)",
+  litteratur: DEFAULT_BG,
+  kunst: DEFAULT_BG,
+  aktuelt: DEFAULT_BG,
+  "tilgaengelige-vaerker": DEFAULT_BG,
 };
 const SECTION_THEME_COLOR: Record<string, string> = {
   intro: DEFAULT_THEME_COLOR,
-  gavlmaleri: "#f28b4a",
-  akryl: "#f06a5f",
-  solskin: "#f0d95a",
-  events: "#78d779",
-  om: "#58a9f2",
-  kontakt: DEFAULT_THEME_COLOR,
+  litteratur: DEFAULT_THEME_COLOR,
+  kunst: DEFAULT_THEME_COLOR,
+  aktuelt: DEFAULT_THEME_COLOR,
+  "tilgaengelige-vaerker": DEFAULT_THEME_COLOR,
 };
 const SECTION_IDS = ["intro", ...NAV.map((item) => item.id)];
-const CURRENT_EVENTS = [
-  {
-    period: "Maj - Juli 2026",
-    title: "Akryl på lærred - Galleri Tese, Aarhus",
-    image: tesePoster,
-    imageAlt: "Plakat for Akryl på lærred - Galleri Tese, Aarhus",
-  },
-  {
-    period: "November 2024",
-    title: "Bogforum, København",
-    image: bogforum1,
-    imageAlt: "Bogforum, København plakat 1",
-  },
-];
+const CURRENT_EVENT = {
+  title: (
+    <>
+      Duoudstilling,
+      <br />
+      Galleri Tese
+    </>
+  ),
+  period: "Maj - Juli 2026",
+  description:
+    'Duoudstilling "Jeg frygter det upersonlige imellem os" hos Galleri TESE, Graven 21 8000 Aarhus C',
+  location: "Galleri TESE, Graven 21 8000 Aarhus C",
+  image: tesePoster,
+  imageAlt: 'Orange eventbillede for "Jeg frygter det upersonlige imellem os" hos Galleri TESE',
+};
+
+const formatAvailableWorkCaption = (name: string) =>
+  `${name}, en del af værkserien må man sælge sine venner, 2025, 80 X 100, Akryl på lærred.\nTilgængelig hos Galleri TESE, Graven 21 8000 Aarhus C, galleritese@gmail.com`;
+
+function PortfolioCategory({
+  id,
+  title,
+  children,
+}: {
+  id: string;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section id={id} data-scroll-align="start" className="relative w-full scroll-mt-0">
+      <div className="px-5 sm:px-6 md:px-16 lg:px-24 pt-24 sm:pt-28 md:pt-40">
+        <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight">
+          {title}
+        </h2>
+      </div>
+      {children}
+    </section>
+  );
+}
 
 function Index() {
   const [bg, setBg] = useState(DEFAULT_BG);
   const [activeId, setActiveId] = useState<string>("intro");
-  const [activeEventIndex, setActiveEventIndex] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const activeEvent = CURRENT_EVENTS[activeEventIndex];
 
   const onEnter = useCallback((id: string, color: string) => {
     setActiveId(id);
     setBg(color);
   }, []);
 
-  const showPreviousEvent = useCallback(() => {
-    setActiveEventIndex((prev) => Math.max(0, prev - 1));
-  }, []);
-
-  const showNextEvent = useCallback(() => {
-    setActiveEventIndex((prev) => Math.min(CURRENT_EVENTS.length - 1, prev + 1));
+  const onCategoryEnter = useCallback((categoryId: string) => {
+    setActiveId(categoryId);
+    setBg(DEFAULT_BG);
   }, []);
 
   useEffect(() => {
@@ -165,221 +177,224 @@ function Index() {
         onMenuStateChange={setIsMenuOpen}
       />
 
-      <main className="pt-16 md:pt-0 md:ml-72 lg:ml-80">
+      <main className="md:ml-72 lg:ml-80">
         {/* Intro */}
         <Section
           id="intro"
           bg={DEFAULT_BG}
           onEnter={onEnter}
-          images={[
-            {
-              src: yellowTulip,
-              alt: "Gul tulipan på transparent baggrund",
-            },
-          ]}
-        />
-
-        <Section
-          id="gavlmaleri"
-          bg="var(--clay)"
-          onEnter={onEnter}
-          imageOnRight={false}
-          title="Gavlmaleri"
-          caption="København NV, 39 kvm"
-          variant="fullscreen"
-          images={[
-            {
-              src: gavlmaleri1,
-              alt: "Gavlmaleri foto 1",
-            },
-            {
-              src: gavlmaleri2,
-              alt: "Gavlmaleri foto 2",
-            },
-            {
-              src: gavlmaleri3,
-              alt: "Gavlmaleri foto 3",
-            },
-            {
-              src: gavlmaleri4,
-              alt: "Gavlmaleri foto 4",
-            },
-            {
-              src: gavlmaleri5,
-              alt: "Gavlmaleri foto 5",
-            },
-          ]}
-        />
-
-        <Section
-          id="akryl"
-          bg="var(--rose)"
-          onEnter={onEnter}
-          imageOnRight
-          title="Akryl på lærred"
-          caption="80 X 100 cm. Akryl på lærred."
-          variant="gallery"
-          images={[
-            { src: luca, alt: "Luca", caption: "Luca" },
-            { src: amalie, alt: "Amalie", caption: "Amalie" },
-            { src: lucas, alt: "Lucas", caption: "Lucas" },
-            { src: sarah, alt: "Sarah", caption: "Sarah" },
-            { src: marcus, alt: "Marcus", caption: "Marcus" },
-            { src: nicoline, alt: "Nicoline", caption: "Nicoline" },
-            { src: carl, alt: "Carl", caption: "Carl" },
-            { src: frederik, alt: "Frederik", caption: "Frederik" },
-            { src: kathrine, alt: "Kathrine", caption: "Kathrine" },
-            { src: viktor, alt: "Viktor", caption: "Viktor" },
-          ]}
-          body={
-            <p>
-              På nettet sælger vi os selv – frivilligt, på papiret – men praktisk talt er der langt
-              fra tale om samtykke. Virksomhederne udnytter vores natur og de lever af vores
-              afhængighed. Vi fratages vores ungdom, fortrænger forgængeligheden, fokuserer på det
-              forkerte og vi opdager det for sent.
-              <br />
-              <br />I en verden hvor vi (mere eller mindre) glædeligt sælger os selv, vores drømme,
-              ambitioner, og kærlighed til os selv, for bare korte momenter af indbildt glæde –
-              spørger jeg: Ville du også sælge dine venner?
-            </p>
-          }
-        />
-
-        <Section
-          id="solskin"
-          bg="var(--bone)"
-          onEnter={onEnter}
-          imageOnRight={false}
-          title="Solskin og tvivl"
-          caption="Amanda Books, 2023"
-          variant="spread"
-          images={[
-            {
-              src: solskinOgTvivl,
-              alt: "Solskin og tvivl bogforside med citronmotiv",
-            },
-          ]}
-          body={
-            <p>
-              Kan I huske min gule notesbog fra gymnasietiden? Den bliver nu udgivet som
-              digtsamlingen ‘Solskin og Tvivl’.
-            </p>
-          }
-        />
-
-        <Section
-          id="events"
-          bg="var(--sage)"
-          onEnter={onEnter}
-          transitionKey={activeEventIndex}
-          preloadImageSources={CURRENT_EVENTS.map((event) => event.image)}
-          imageOnRight={false}
-          title="Udstillinger og events"
-          variant="spread"
-          showImageNavigation={false}
-          images={[
-            {
-              src: activeEvent.image,
-              alt: activeEvent.imageAlt,
-            },
-          ]}
-          body={
-            <>
-              <div className="h-[3.5rem] overflow-hidden">
-                <p className="font-serif text-lg leading-snug">{activeEvent.title}</p>
-              </div>
-              <p className="font-sans text-xs uppercase tracking-[0.2em] text-foreground/70">
-                {activeEvent.period}
-              </p>
-              <div className="mt-5 relative h-14 w-full font-sans">
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <p className="translate-y-[5px] text-[11px] uppercase tracking-[0.14em] text-muted-foreground tabular-nums text-center leading-none">
-                    {activeEventIndex + 1} / {CURRENT_EVENTS.length}
-                  </p>
-                </div>
-
-                {activeEventIndex > 0 ? (
-                  <button
-                    type="button"
-                    onClick={showPreviousEvent}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center text-4xl leading-none font-light text-foreground/40 hover:text-foreground/70 transition-colors cursor-pointer"
-                    aria-label="Forrige event"
-                  >
-                    ‹
-                  </button>
-                ) : (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 h-12 w-12" aria-hidden />
-                )}
-                {activeEventIndex < CURRENT_EVENTS.length - 1 ? (
-                  <button
-                    type="button"
-                    onClick={showNextEvent}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center text-4xl leading-none font-light text-foreground/40 hover:text-foreground/70 transition-colors cursor-pointer"
-                    aria-label="Næste event"
-                  >
-                    ›
-                  </button>
-                ) : (
-                  <div
-                    className="absolute right-0 top-1/2 -translate-y-1/2 h-12 w-12"
-                    aria-hidden
-                  />
-                )}
-              </div>
-            </>
-          }
-        />
-
-        <Section
-          id="om"
-          bg="var(--sky)"
-          onEnter={onEnter}
-          imageOnRight
-          title="Om mig"
-          variant="split"
-          images={[
-            {
-              src: emiliePortrait,
-              alt: "Portræt af kunstneren i atelieret",
-            },
-          ]}
-          body={
-            <>
-              <p>
-                Emilie Lystberg (f. 2000) blev som 19-årig student fra Rungsted Gymnasium. Siden da
-                har hun været bosat i København og Østrig, hvor hun arbejder som ski-instruktør.
-              </p>
-              <p>
-                Emilie Lystberg har altid været nysgerrig på verden og søger at finde svar på livets
-                små og store spørgsmål. Hun har sin lille, solskinsgule notesbog med sig overalt og
-                skriver spontane digte, når ordene melder sig.
-              </p>
-            </>
-          }
-        />
-
-        <Section
-          id="kontakt"
-          bg="var(--butter)"
-          onEnter={onEnter}
-          imageOnRight={false}
-          title="Skriv til mig"
+          naturalHeightOnMobile
+          sectionClassName="max-md:pt-40 max-md:pb-12 md:py-40"
           variant="text"
           body={
             <>
-              <div className="space-y-3 text-base font-sans not-italic">
+              <div className="space-y-2 font-sans text-sm leading-relaxed text-foreground/75">
                 <p>
-                  <a
-                    href="mailto:emilie@lystberg.dk"
-                    className="font-serif text-2xl underline-offset-4 hover:underline"
-                  >
+                  <a href="https://www.instagram.com/emilielystberg" className="hover:underline">
+                    @emilielystberg
+                  </a>
+                </p>
+                <p>
+                  <a href="mailto:emilie@lystberg.dk" className="hover:underline">
                     emilie@lystberg.dk
                   </a>
                 </p>
               </div>
+              <p>
+                Emilie Lystberg (2000) Uanset om hun arbejder med ord eller maling, er det
+                forgængeligheden der optager hende. Gennem hendes værker minder hun os om tiden der
+                går og hun opfordrer os til at leve mere.
+              </p>
+              <p>
+                Emilie Lystbergs værker udfolder sig omkring teknologi og sociale medier og
+                kritiserer de virksomheder der bevidst gør os afhængige. Ikke alene lever de af
+                vores afhængighed, de overbeviser os om, at det er vores eget valg. Emilie sætter
+                spørgsmålstegn ved hvordan vi tager vi kontrollen over vores liv tilbage, i en
+                verden hvor vi ikke ved, at vi mistede den, i første omgang?
+              </p>
             </>
           }
         />
+
+        <PortfolioCategory id="litteratur" title="Litteratur">
+          <Section
+            id="solskin"
+            bg={DEFAULT_BG}
+            onEnter={() => onCategoryEnter("litteratur")}
+            imageOnRight={false}
+            title="Solskin og tvivl"
+            caption="Amanda Books, 2023"
+            variant="spread"
+            images={[
+              {
+                src: solskinOgTvivl,
+                alt: "Solskin og tvivl bogforside med citronmotiv",
+              },
+            ]}
+            body={
+              <>
+                <p>
+                  Digtsamlingen SOLSKIN og TVIVL er skrevet af en ung kvinde, som udtrykker sin
+                  begejstring for livet og forundring over dets mangfoldighed.
+                </p>
+                <p>
+                  I nogle af digtene rejser Emilie Lystberg tvivl, om alt går den rigtige vej. Hun
+                  belyser flere af livets gåder og opfordrer læseren til selv at tage stilling. Der
+                  gives ingen svar. Samlingen indbyder til tankefuldhed og undren. Emilie Lystberg
+                  udfordrer bevidst sin egen generations – til tider – naive syn på tilværelsen,
+                  samtidig med at hun udstiller den verden, som er blevet overleveret til de unge.
+                </p>
+                <ul className="list-disc space-y-2 pl-5">
+                  <li>Bogen er illustreret af Floor te Velde.</li>
+                  <li>Solskin og Tvivl er Emilie Lystbergs debut som forfatter.</li>
+                  <li>Forhandles gennem alle boghandlere.</li>
+                </ul>
+              </>
+            }
+          />
+        </PortfolioCategory>
+
+        <PortfolioCategory id="kunst" title="Kunst">
+          <Section
+            id="koi"
+            bg={DEFAULT_BG}
+            onEnter={() => onCategoryEnter("kunst")}
+            imageOnRight={false}
+            title="Koi og Appelsin"
+            caption="2025"
+            variant="spread"
+            images={[
+              {
+                src: koi,
+                alt: "Koi og Appelsin",
+              },
+            ]}
+            body={
+              <>
+                <p>80 X 100, Akryl på lærred.</p>
+                <p>Et værk inspireret af hendes tid i Italien og Japan.</p>
+                <p>Et værk om en fisk der svømmer, eller måske flyver.</p>
+              </>
+            }
+          />
+
+          <Section
+            id="gavlmaleri"
+            bg={DEFAULT_BG}
+            onEnter={() => onCategoryEnter("kunst")}
+            imageOnRight={false}
+            title="Gavlmaleri"
+            caption="2025"
+            variant="fullscreen"
+            images={[
+              {
+                src: gavlmaleri1,
+                alt: "Gavlmaleri foto 1",
+              },
+              {
+                src: gavlmaleri2,
+                alt: "Gavlmaleri foto 2",
+              },
+              {
+                src: gavlmaleri3,
+                alt: "Gavlmaleri foto 3",
+              },
+              {
+                src: gavlmaleri4,
+                alt: "Gavlmaleri foto 4",
+              },
+              {
+                src: gavlmaleri5,
+                alt: "Gavlmaleri foto 5",
+              },
+            ]}
+            body={<p>København NV, 39 kvm</p>}
+          />
+        </PortfolioCategory>
+
+        <PortfolioCategory id="aktuelt" title="Aktuelt">
+          <Section
+            id="events"
+            bg={DEFAULT_BG}
+            onEnter={() => onCategoryEnter("aktuelt")}
+            imageOnRight={false}
+            title={CURRENT_EVENT.title}
+            variant="spread"
+            showImageNavigation={false}
+            images={[
+              {
+                src: CURRENT_EVENT.image,
+                alt: CURRENT_EVENT.imageAlt,
+              },
+            ]}
+            body={
+              <>
+                <p className="font-sans text-xs uppercase tracking-[0.2em] text-foreground/70">
+                  {CURRENT_EVENT.period}
+                </p>
+                <p>{CURRENT_EVENT.description}</p>
+                <p>Emilie er aktuel med værkserien: Må man sælge sine venner</p>
+                <p>
+                  På nettet sælger vi os selv – frivilligt, på papiret – men praktisk talt er der
+                  langt fra tale om samtykke. Virksomhederne udnytter vores natur og de lever af
+                  vores afhængighed. Vi fratages vores ungdom, fortrænger forgængeligheden og vi
+                  opdager det for sent.
+                </p>
+                <p>
+                  I en verden hvor vi uden at tøve sælger os selv, spørger Emilie Lystberg, om vi
+                  også ville sælge vores venner?
+                </p>
+                <p>
+                  Kurator Sarah-Kamille Teib, beskriver Emilies værkserie som: "Cute, art-pop,
+                  cartoonish og readymade- konceptuel stor værkserie, med mennesketyper vi kender i
+                  mange farver."
+                </p>
+                <p className="italic">
+                  Emilie Lystberg retter blikket mod den digitale forbrugerkultur, hvor relationer,
+                  opmærksomhed og identitet i stigende grad fungerer som handelsvarer. Hendes værker
+                  blotlægger en økonomi, hvor selviscenesættelse fremstilles som frihed, mens
+                  afhængighed designes som brugeroplevelse. Spørgsmålet er ikke blot, hvad vi deler,
+                  men hvad der udvindes af os, mens vi gør det.
+                </p>
+              </>
+            }
+          />
+        </PortfolioCategory>
+
+        <PortfolioCategory id="tilgaengelige-vaerker" title="Tilgængelige værker">
+          <Section
+            id="akryl"
+            bg={DEFAULT_BG}
+            onEnter={() => onCategoryEnter("tilgaengelige-vaerker")}
+            imageOnRight
+            title="Må man sælge sine venner"
+            variant="gallery"
+            images={[
+              { src: luca, alt: "Luca", caption: formatAvailableWorkCaption("Luca") },
+              { src: amalie, alt: "Amalie", caption: formatAvailableWorkCaption("Amalie") },
+              { src: lucas, alt: "Lucas", caption: formatAvailableWorkCaption("Lucas") },
+              { src: sarah, alt: "Sarah", caption: formatAvailableWorkCaption("Sarah") },
+              { src: marcus, alt: "Marcus", caption: formatAvailableWorkCaption("Marcus") },
+              { src: nicoline, alt: "Nicoline", caption: formatAvailableWorkCaption("Nicoline") },
+              { src: carl, alt: "Carl", caption: formatAvailableWorkCaption("Carl") },
+              { src: frederik, alt: "Frederik", caption: formatAvailableWorkCaption("Frederik") },
+              { src: kathrine, alt: "Kathrine", caption: formatAvailableWorkCaption("Kathrine") },
+              { src: viktor, alt: "Viktor", caption: formatAvailableWorkCaption("Viktor") },
+            ]}
+            body={
+              <p>
+                På nettet sælger vi os selv – frivilligt, på papiret – men praktisk talt er der
+                langt fra tale om samtykke. Virksomhederne udnytter vores natur og de lever af vores
+                afhængighed. Vi fratages vores ungdom, fortrænger forgængeligheden, fokuserer på det
+                forkerte og vi opdager det for sent.
+                <br />
+                <br />I en verden hvor vi (mere eller mindre) glædeligt sælger os selv, vores
+                drømme, ambitioner, og kærlighed til os selv, for bare korte momenter af indbildt
+                glæde – spørger jeg: Ville du også sælge dine venner?
+              </p>
+            }
+          />
+        </PortfolioCategory>
       </main>
 
       <div
