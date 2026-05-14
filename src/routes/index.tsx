@@ -22,6 +22,9 @@ import nicoline from "../../pictures/akryl/Nicoline.jpg";
 import sarah from "../../pictures/akryl/Sarah.jpg";
 import viktor from "../../pictures/akryl/Viktor.jpg";
 
+/** Browser top bar / overscroll (`<meta name="theme-color" content="…">`) */
+const THEME_COLOR_HEX = "#eadf35";
+
 export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
@@ -32,6 +35,7 @@ export const Route = createFileRoute("/")({
         content:
           "Værker, udstillinger og poesi. Et levende arkiv af malerier, gavlmalerier og tekster.",
       },
+      { name: "theme-color", content: THEME_COLOR_HEX },
     ],
   }),
 });
@@ -44,21 +48,12 @@ const NAV: NavItem[] = [
 ];
 
 const DEFAULT_BG = "var(--bone)";
-const DEFAULT_THEME_COLOR = "#eadf35";
-const MENU_THEME_COLOR = DEFAULT_THEME_COLOR;
 const SECTION_BG: Record<string, string> = {
   intro: DEFAULT_BG,
   litteratur: DEFAULT_BG,
   kunst: DEFAULT_BG,
   aktuelt: DEFAULT_BG,
   "tilgaengelige-vaerker": DEFAULT_BG,
-};
-const SECTION_THEME_COLOR: Record<string, string> = {
-  intro: DEFAULT_THEME_COLOR,
-  litteratur: DEFAULT_THEME_COLOR,
-  kunst: DEFAULT_THEME_COLOR,
-  aktuelt: DEFAULT_THEME_COLOR,
-  "tilgaengelige-vaerker": DEFAULT_THEME_COLOR,
 };
 const SECTION_IDS = ["intro", ...NAV.map((item) => item.id)];
 const CURRENT_EVENT = {
@@ -104,7 +99,6 @@ function PortfolioCategory({
 function Index() {
   const [bg, setBg] = useState(DEFAULT_BG);
   const [activeId, setActiveId] = useState<string>("intro");
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const onEnter = useCallback((id: string, color: string) => {
     setActiveId(id);
@@ -124,26 +118,6 @@ function Index() {
       document.body.style.backgroundColor = "";
     };
   }, [bg]);
-
-  useEffect(() => {
-    let meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.setAttribute("name", "theme-color");
-      document.head.appendChild(meta);
-    }
-
-    const themeColor = isMenuOpen
-      ? MENU_THEME_COLOR
-      : (SECTION_THEME_COLOR[activeId] ?? DEFAULT_THEME_COLOR);
-    const applyThemeColor = () => meta.setAttribute("content", themeColor);
-
-    applyThemeColor();
-    requestAnimationFrame(applyThemeColor);
-    const timeout = window.setTimeout(applyThemeColor, 250);
-
-    return () => window.clearTimeout(timeout);
-  }, [activeId, isMenuOpen]);
 
   const syncSectionFromViewport = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -176,7 +150,6 @@ function Index() {
         activeId={activeId}
         backgroundColor={DEFAULT_BG}
         onMenuClose={syncSectionFromViewport}
-        onMenuStateChange={setIsMenuOpen}
       />
 
       <main className="md:ml-72 lg:ml-80">
@@ -401,13 +374,10 @@ function Index() {
 
       <div
         aria-hidden
-        className={[
-          "fixed inset-x-0 bottom-0 md:hidden pointer-events-none",
-          isMenuOpen ? "z-[60]" : "z-40",
-        ].join(" ")}
+        className="fixed inset-x-0 bottom-0 z-40 md:hidden pointer-events-none"
         style={{
           height: "env(safe-area-inset-bottom)",
-          backgroundColor: isMenuOpen ? MENU_THEME_COLOR : bg,
+          backgroundColor: bg,
         }}
       />
     </div>
