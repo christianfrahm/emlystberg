@@ -159,7 +159,7 @@ function Index() {
           bg={DEFAULT_BG}
           onEnter={onEnter}
           naturalHeightOnMobile
-          sectionClassName="max-md:pt-40 max-md:pb-12 md:py-40"
+          sectionClassName="max-md:pt-25 max-md:pb-12 md:py-40"
           variant="text"
           body={
             <>
