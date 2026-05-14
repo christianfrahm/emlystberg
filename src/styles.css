@@ -187,6 +187,16 @@
     background-color: var(--mobile-menu-background, var(--background));
   }
 
+  @media (max-width: 47.999rem) {
+    .mobile-menu-panel {
+      top: calc(env(safe-area-inset-top) * -1);
+      bottom: calc(env(safe-area-inset-bottom) * -1);
+      height: calc(100dvh + env(safe-area-inset-top) + env(safe-area-inset-bottom));
+      min-height: calc(100dvh + env(safe-area-inset-top) + env(safe-area-inset-bottom));
+      padding-top: calc(env(safe-area-inset-top) + 6rem);
+    }
+  }
+
   @supports (background-color: color-mix(in oklch, white 50%, transparent)) {
     .mobile-menu-panel {
       background-color: color-mix(
