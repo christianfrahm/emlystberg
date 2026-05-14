@@ -151,8 +151,8 @@ export function Sidebar({
           "px-6 sm:px-8 md:px-12 pt-24 md:py-14",
           "flex flex-col justify-between",
           "overflow-y-auto",
-          "transition-transform duration-500 ease-out",
-          open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          "transition-opacity md:transition-transform duration-500 ease-out",
+          open ? "opacity-100" : "opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto",
         ].join(" ")}
         style={
           {
