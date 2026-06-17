@@ -34,7 +34,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Værker, udstillinger og poesi. Et levende arkiv af malerier, gavlmalerier og tekster.",
+          "Emilie Lystberg — forfatter og kunstner. Værker, udstillinger og poesi. Et levende arkiv af malerier, gavlmalerier og tekster.",
       },
     ],
   }),
