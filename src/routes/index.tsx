@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { OkkergokkerFooter } from "@/components/okkergokker-footer";
 import { Sidebar, type NavItem } from "@/components/portfolio/Sidebar";
 import { Section } from "@/components/portfolio/Section";
 
@@ -23,7 +24,7 @@ import sarah from "../../pictures/akryl/Sarah.jpg";
 import viktor from "../../pictures/akryl/Viktor.jpg";
 
 /** Browser top bar / overscroll (`<meta name="theme-color" content="…">`) */
-const THEME_COLOR_HEX = "#eadf35";
+const THEME_COLOR_HEX = "#f1e09c";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -47,7 +48,7 @@ const NAV: NavItem[] = [
   { id: "tilgaengelige-vaerker", label: "tilgængelige værker" },
 ];
 
-const DEFAULT_BG = "var(--bone)";
+const DEFAULT_BG = "var(--background)";
 const SECTION_BG: Record<string, string> = {
   intro: DEFAULT_BG,
   litteratur: DEFAULT_BG,
@@ -359,6 +360,13 @@ function Index() {
             }
           />
         </PortfolioCategory>
+
+        <div
+          className="pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] sm:pb-6"
+          style={{ backgroundColor: DEFAULT_BG }}
+        >
+          <OkkergokkerFooter backgroundColor={DEFAULT_BG} footerStyle={{ paddingBottom: 0 }} />
+        </div>
       </main>
 
       <div

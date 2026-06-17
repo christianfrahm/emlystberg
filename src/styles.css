@@ -69,29 +69,20 @@
 
 :root {
   --radius: 0.25rem;
-  /* Section palette — saturated pop colors */
-  --butter: oklch(0.9 0.2 105);
-  --bone: oklch(0.93 0.16 85);
-  --rose: oklch(0.78 0.24 20);
-  --sage: oklch(0.82 0.22 150);
-  --sky: oklch(0.78 0.2 245);
-  --clay: oklch(0.8 0.22 40);
-  --ink: oklch(0.22 0.02 80);
-
-  --background: var(--bone);
-  --foreground: var(--ink);
-  --card: var(--bone);
-  --card-foreground: var(--ink);
-  --popover: var(--bone);
-  --popover-foreground: var(--ink);
-  --primary: var(--ink);
-  --primary-foreground: var(--bone);
-  --secondary: oklch(0.93 0.03 90);
-  --secondary-foreground: var(--ink);
-  --muted: oklch(0.93 0.025 90);
+  --background: oklch(0.93 0.16 85);
+  --foreground: oklch(0.22 0.02 80);
+  --card: var(--background);
+  --card-foreground: var(--foreground);
+  --popover: var(--background);
+  --popover-foreground: var(--foreground);
+  --primary: var(--foreground);
+  --primary-foreground: var(--background);
+  --secondary: var(--background);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--background);
   --muted-foreground: oklch(0.45 0.025 80);
-  --accent: var(--clay);
-  --accent-foreground: var(--ink);
+  --accent: var(--background);
+  --accent-foreground: var(--foreground);
   --destructive: oklch(0.55 0.2 27);
   --destructive-foreground: oklch(0.98 0 0);
   --border: oklch(0.85 0.02 80);
@@ -100,16 +91,16 @@
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --chart-4: var(--background);
+  --chart-5: var(--background);
+  --sidebar: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--foreground);
+  --sidebar-primary-foreground: var(--background);
+  --sidebar-accent: var(--background);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: oklch(0.85 0.02 80);
+  --sidebar-ring: oklch(0.5 0.04 80);
 }
 
 .dark {
