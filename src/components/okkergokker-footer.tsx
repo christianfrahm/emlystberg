@@ -67,10 +67,11 @@ const FOOTER_STYLES = `
   display: flex;
   align-items: flex-start;
   justify-content: center;
+  min-height: 8.5rem;
   height: 8.5rem;
   max-width: 100%;
   margin: 0 auto;
-  overflow: hidden;
+  overflow: visible;
   color: var(--okkergokker-footer-art);
 }
 
@@ -108,7 +109,9 @@ const FOOTER_STYLES = `
   }
 
   .okkergokker-footer__art-wrap {
+    min-height: 12rem;
     height: 12rem;
+    overflow: visible;
   }
 
   .okkergokker-footer__art {
