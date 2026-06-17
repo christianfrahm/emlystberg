@@ -180,12 +180,6 @@
     background-color: var(--mobile-menu-background, var(--background));
   }
 
-  @media (min-width: 48rem) {
-    .mobile-menu-panel {
-      background-color: transparent;
-    }
-  }
-
   .fade-up {
     opacity: 0;
     transform: translateY(24px);

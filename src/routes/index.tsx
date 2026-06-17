@@ -124,9 +124,10 @@ function Index() {
 
   return (
     <div id="top" className="min-h-screen bg-background">
-      <Sidebar items={NAV} activeId={activeId} onMenuClose={syncSectionFromViewport} />
+      <div className="md:flex md:items-start">
+        <Sidebar items={NAV} activeId={activeId} onMenuClose={syncSectionFromViewport} />
 
-      <main className="md:ml-72 lg:ml-80">
+        <main className="flex-1 min-w-0">
         {/* Intro */}
         <Section
           id="intro"
@@ -333,11 +334,12 @@ function Index() {
             }
           />
         </PortfolioCategory>
+        </main>
+      </div>
 
-        <div className="bg-background pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] sm:pb-6">
-          <OkkergokkerFooter footerStyle={{ paddingBottom: 0 }} />
-        </div>
-      </main>
+      <div className="bg-background pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] sm:pb-6">
+        <OkkergokkerFooter footerStyle={{ paddingBottom: 0 }} />
+      </div>
 
       <div
         aria-hidden

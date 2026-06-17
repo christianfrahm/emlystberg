@@ -161,7 +161,7 @@ export function Sidebar({
 
       <aside
         className={[
-          "hidden md:fixed md:inset-y-0 md:left-0 md:z-30 md:flex md:w-72 lg:w-80",
+          "hidden md:sticky md:top-0 md:self-start md:shrink-0 md:z-30 md:flex md:w-72 md:h-screen lg:w-80",
           "mobile-menu-panel",
           "md:px-12 md:py-14",
           "flex-col justify-between",
