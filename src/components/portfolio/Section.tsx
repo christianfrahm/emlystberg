@@ -33,6 +33,8 @@ export interface SectionProps {
   sectionClassName?: string;
   /** Below md: no min-screen height, content starts from top so e.g. menu + bio fit together */
   naturalHeightOnMobile?: boolean;
+  /** Content-sized height at all breakpoints (e.g. last section before footer) */
+  naturalHeight?: boolean;
 }
 
 export function Section({
@@ -52,6 +54,7 @@ export function Section({
   onEnter,
   sectionClassName,
   naturalHeightOnMobile = false,
+  naturalHeight = false,
 }: SectionProps) {
   const ref = useRef<HTMLElement | null>(null);
   const loadedSourcesRef = useRef<Set<string>>(new Set());
@@ -155,9 +158,11 @@ export function Section({
       id={id}
       className={[
         "relative w-full px-5 sm:px-6 md:px-16 lg:px-24 flex flex-col",
-        naturalHeightOnMobile
-          ? "max-md:min-h-0 max-md:justify-start md:min-h-screen md:justify-center"
-          : "min-h-screen justify-center",
+        naturalHeight
+          ? "min-h-0 justify-start"
+          : naturalHeightOnMobile
+            ? "max-md:min-h-0 max-md:justify-start md:min-h-screen md:justify-center"
+            : "min-h-screen justify-center",
         sectionClassName ?? "py-24 sm:py-28 md:py-40",
       ].join(" ")}
     >

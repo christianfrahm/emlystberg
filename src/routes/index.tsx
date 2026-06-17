@@ -306,6 +306,8 @@ function Index() {
             id="akryl"
             bg={SECTION_BG}
             onEnter={() => onCategoryEnter("tilgaengelige-vaerker")}
+            naturalHeight
+            sectionClassName="pt-24 sm:pt-28 md:pt-40 pb-0"
             imageOnRight
             title="Må man sælge sine venner"
             variant="gallery"

@@ -45,9 +45,10 @@ const FOOTER_STYLES = `
   --okkergokker-footer-art: #5e5850;
   --okkergokker-footer-link: rgba(122, 116, 108, 0.5);
   --okkergokker-footer-font: "Okkergokker Footer Courier", "Courier Prime", Courier, monospace;
+  --okkergokker-footer-content-gap: 2rem;
 
   box-sizing: border-box;
-  margin: 0;
+  margin: var(--okkergokker-footer-content-gap) 0 0;
   padding: 0.5rem 1rem max(0.5rem, env(safe-area-inset-bottom, 0px));
   background: var(--okkergokker-footer-bg);
   color: var(--okkergokker-footer-text);
@@ -105,6 +106,7 @@ const FOOTER_STYLES = `
 
 @media (min-width: 640px) {
   .okkergokker-footer {
+    --okkergokker-footer-content-gap: 2.5rem;
     padding: 0.5rem 1.5rem 1.5rem;
   }
 
@@ -132,6 +134,7 @@ export type OkkergokkerFooterProps = {
   textColor?: string;
   artColor?: string;
   linkColor?: string;
+  contentGap?: string;
   footerStyle?: CSSProperties;
 };
 
@@ -143,6 +146,7 @@ export function OkkergokkerFooter({
   textColor,
   artColor,
   linkColor,
+  contentGap,
   footerStyle,
 }: OkkergokkerFooterProps) {
   const style = {
@@ -150,6 +154,7 @@ export function OkkergokkerFooter({
     ...(textColor ? { "--okkergokker-footer-text": textColor } : {}),
     ...(artColor ? { "--okkergokker-footer-art": artColor } : {}),
     ...(linkColor ? { "--okkergokker-footer-link": linkColor } : {}),
+    ...(contentGap ? { "--okkergokker-footer-content-gap": contentGap } : {}),
     ...footerStyle,
   } as CSSProperties;
 
