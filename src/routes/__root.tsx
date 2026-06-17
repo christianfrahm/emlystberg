@@ -5,6 +5,7 @@ import {
   createRootRouteWithContext,
   useRouter,
 } from "@tanstack/react-router";
+import { THEME_COLOR_META } from "@/lib/site-colors";
 
 function NotFoundComponent() {
   return (
@@ -67,6 +68,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
+  head: () => ({
+    meta: [
+      THEME_COLOR_META,
+      { name: "color-scheme", content: "light" },
+    ],
+  }),
 });
 
 function RootComponent() {

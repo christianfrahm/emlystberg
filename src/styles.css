@@ -69,7 +69,9 @@
 
 :root {
   --radius: 0.25rem;
-  --background: oklch(0.93 0.16 85);
+  /* butter — keep in sync with src/lib/site-colors.ts */
+  --butter: #f3e300;
+  --background: var(--butter);
   --foreground: oklch(0.22 0.02 80);
   --card: var(--background);
   --card-foreground: var(--foreground);
@@ -146,6 +148,7 @@
   html {
     scroll-behavior: smooth;
     background-color: var(--color-background);
+    color-scheme: light;
   }
 
   body {

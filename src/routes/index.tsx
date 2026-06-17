@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { OkkergokkerFooter } from "@/components/okkergokker-footer";
 import { Sidebar, type NavItem } from "@/components/portfolio/Sidebar";
 import { Section } from "@/components/portfolio/Section";
-import { syncThemeColorFromBackground } from "@/lib/sync-theme-color";
+import { BUTTER } from "@/lib/site-colors";
 
 import solskinOgTvivl from "../../pictures/solskin og tvivl/solskin-og-tvivl_635344_1.jpg";
 import tesePoster from "../../pictures/events/tese/SnapInsta.to_670552270_17921748189322817_6741333732493793503_n.jpg";
@@ -24,8 +24,8 @@ import nicoline from "../../pictures/akryl/Nicoline.jpg";
 import sarah from "../../pictures/akryl/Sarah.jpg";
 import viktor from "../../pictures/akryl/Viktor.jpg";
 
-/** Section background token — always resolves to --background in CSS. */
-const SECTION_BG = "var(--background)";
+/** Section background — fixed butter hex, same as --background in CSS. */
+const SECTION_BG = BUTTER;
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -37,7 +37,6 @@ export const Route = createFileRoute("/")({
         content:
           "Værker, udstillinger og poesi. Et levende arkiv af malerier, gavlmalerier og tekster.",
       },
-      { name: "theme-color", content: "oklch(0.93 0.16 85)" },
     ],
   }),
 });
@@ -99,10 +98,6 @@ function Index() {
 
   const onCategoryEnter = useCallback((categoryId: string) => {
     setActiveId(categoryId);
-  }, []);
-
-  useEffect(() => {
-    syncThemeColorFromBackground();
   }, []);
 
   const syncSectionFromViewport = useCallback(() => {
