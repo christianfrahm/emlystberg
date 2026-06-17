@@ -40,7 +40,7 @@ const FOOTER_STYLES = `
 }
 
 .okkergokker-footer {
-  --okkergokker-footer-bg: #f3e300;
+  --okkergokker-footer-bg: #ffdf58;
   --okkergokker-footer-text: rgba(122, 116, 108, 0.5);
   --okkergokker-footer-art: #000000;
   --okkergokker-footer-link: rgba(122, 116, 108, 0.5);

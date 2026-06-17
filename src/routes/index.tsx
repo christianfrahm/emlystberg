@@ -3,7 +3,7 @@ import { useCallback, useState, type ReactNode } from "react";
 import { OkkergokkerFooter } from "@/components/okkergokker-footer";
 import { Sidebar, type NavItem } from "@/components/portfolio/Sidebar";
 import { Section } from "@/components/portfolio/Section";
-import { BUTTER } from "@/lib/site-colors";
+import { SITE_BACKGROUND } from "@/lib/site-colors";
 
 import solskinOgTvivl from "../../pictures/solskin og tvivl/solskin-og-tvivl_635344_1.jpg";
 import tesePoster from "../../pictures/events/tese/SnapInsta.to_670552270_17921748189322817_6741333732493793503_n.jpg";
@@ -24,8 +24,7 @@ import nicoline from "../../pictures/akryl/Nicoline.jpg";
 import sarah from "../../pictures/akryl/Sarah.jpg";
 import viktor from "../../pictures/akryl/Viktor.jpg";
 
-/** Section background — fixed butter hex, same as --background in CSS. */
-const SECTION_BG = BUTTER;
+const SECTION_BG = SITE_BACKGROUND;
 
 export const Route = createFileRoute("/")({
   component: Index,

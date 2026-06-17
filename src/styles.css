@@ -69,9 +69,8 @@
 
 :root {
   --radius: 0.25rem;
-  /* butter — keep in sync with src/lib/site-colors.ts */
-  --butter: #f3e300;
-  --background: var(--butter);
+  /* site background — keep in sync with src/lib/site-colors.ts */
+  --background: #ffdf58;
   --foreground: oklch(0.22 0.02 80);
   --card: var(--background);
   --card-foreground: var(--foreground);
