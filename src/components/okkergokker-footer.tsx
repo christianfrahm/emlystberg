@@ -42,7 +42,7 @@ const FOOTER_STYLES = `
 .okkergokker-footer {
   --okkergokker-footer-bg: #ffdf58;
   --okkergokker-footer-text: rgba(122, 116, 108, 0.5);
-  --okkergokker-footer-art: var(--okkergokker-footer-text);
+  --okkergokker-footer-art: #5e5850;
   --okkergokker-footer-link: rgba(122, 116, 108, 0.5);
   --okkergokker-footer-font: "Okkergokker Footer Courier", "Courier Prime", Courier, monospace;
 
