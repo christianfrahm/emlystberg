@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { OkkergokkerFooter } from "@/components/okkergokker-footer";
 import { Sidebar, type NavItem } from "@/components/portfolio/Sidebar";
 import { Section } from "@/components/portfolio/Section";
+import { syncThemeColorFromBackground } from "@/lib/sync-theme-color";
 
 import solskinOgTvivl from "../../pictures/solskin og tvivl/solskin-og-tvivl_635344_1.jpg";
 import tesePoster from "../../pictures/events/tese/SnapInsta.to_670552270_17921748189322817_6741333732493793503_n.jpg";
@@ -23,8 +24,8 @@ import nicoline from "../../pictures/akryl/Nicoline.jpg";
 import sarah from "../../pictures/akryl/Sarah.jpg";
 import viktor from "../../pictures/akryl/Viktor.jpg";
 
-/** Browser top bar / overscroll (`<meta name="theme-color" content="…">`) */
-const THEME_COLOR_HEX = "#f1e09c";
+/** Section background token — always resolves to --background in CSS. */
+const SECTION_BG = "var(--background)";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/")({
         content:
           "Værker, udstillinger og poesi. Et levende arkiv af malerier, gavlmalerier og tekster.",
       },
-      { name: "theme-color", content: THEME_COLOR_HEX },
+      { name: "theme-color", content: "oklch(0.93 0.16 85)" },
     ],
   }),
 });
@@ -48,14 +49,6 @@ const NAV: NavItem[] = [
   { id: "tilgaengelige-vaerker", label: "tilgængelige værker" },
 ];
 
-const DEFAULT_BG = "var(--background)";
-const SECTION_BG: Record<string, string> = {
-  intro: DEFAULT_BG,
-  litteratur: DEFAULT_BG,
-  kunst: DEFAULT_BG,
-  aktuelt: DEFAULT_BG,
-  "tilgaengelige-vaerker": DEFAULT_BG,
-};
 const SECTION_IDS = ["intro", ...NAV.map((item) => item.id)];
 const CURRENT_EVENT = {
   title: (
@@ -98,27 +91,19 @@ function PortfolioCategory({
 }
 
 function Index() {
-  const [bg, setBg] = useState(DEFAULT_BG);
   const [activeId, setActiveId] = useState<string>("intro");
 
-  const onEnter = useCallback((id: string, color: string) => {
+  const onEnter = useCallback((id: string) => {
     setActiveId(id);
-    setBg(color);
   }, []);
 
   const onCategoryEnter = useCallback((categoryId: string) => {
     setActiveId(categoryId);
-    setBg(DEFAULT_BG);
   }, []);
 
   useEffect(() => {
-    document.documentElement.style.backgroundColor = bg;
-    document.body.style.backgroundColor = bg;
-    return () => {
-      document.documentElement.style.backgroundColor = "";
-      document.body.style.backgroundColor = "";
-    };
-  }, [bg]);
+    syncThemeColorFromBackground();
+  }, []);
 
   const syncSectionFromViewport = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -141,23 +126,17 @@ function Index() {
     }
 
     setActiveId(bestId);
-    setBg(SECTION_BG[bestId] ?? DEFAULT_BG);
   }, [activeId]);
 
   return (
     <div id="top" className="min-h-screen bg-background">
-      <Sidebar
-        items={NAV}
-        activeId={activeId}
-        backgroundColor={DEFAULT_BG}
-        onMenuClose={syncSectionFromViewport}
-      />
+      <Sidebar items={NAV} activeId={activeId} onMenuClose={syncSectionFromViewport} />
 
       <main className="md:ml-72 lg:ml-80">
         {/* Intro */}
         <Section
           id="intro"
-          bg={DEFAULT_BG}
+          bg={SECTION_BG}
           onEnter={onEnter}
           naturalHeightOnMobile
           sectionClassName="max-md:pt-25 max-md:pb-12 md:py-40"
@@ -195,7 +174,7 @@ function Index() {
         <PortfolioCategory id="litteratur" title="Litteratur">
           <Section
             id="solskin"
-            bg={DEFAULT_BG}
+            bg={SECTION_BG}
             onEnter={() => onCategoryEnter("litteratur")}
             imageOnRight={false}
             title="Solskin og tvivl"
@@ -233,7 +212,7 @@ function Index() {
         <PortfolioCategory id="kunst" title="Kunst">
           <Section
             id="koi"
-            bg={DEFAULT_BG}
+            bg={SECTION_BG}
             onEnter={() => onCategoryEnter("kunst")}
             imageOnRight={false}
             title="Koi og Appelsin"
@@ -256,7 +235,7 @@ function Index() {
 
           <Section
             id="gavlmaleri"
-            bg={DEFAULT_BG}
+            bg={SECTION_BG}
             onEnter={() => onCategoryEnter("kunst")}
             imageOnRight={false}
             title="Gavlmaleri"
@@ -291,7 +270,7 @@ function Index() {
         <PortfolioCategory id="aktuelt" title="Aktuelt">
           <Section
             id="events"
-            bg={DEFAULT_BG}
+            bg={SECTION_BG}
             onEnter={() => onCategoryEnter("aktuelt")}
             imageOnRight={false}
             title={CURRENT_EVENT.title}
@@ -330,7 +309,7 @@ function Index() {
         <PortfolioCategory id="tilgaengelige-vaerker" title="Tilgængelige værker">
           <Section
             id="akryl"
-            bg={DEFAULT_BG}
+            bg={SECTION_BG}
             onEnter={() => onCategoryEnter("tilgaengelige-vaerker")}
             imageOnRight
             title="Må man sælge sine venner"
@@ -361,21 +340,15 @@ function Index() {
           />
         </PortfolioCategory>
 
-        <div
-          className="pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] sm:pb-6"
-          style={{ backgroundColor: DEFAULT_BG }}
-        >
-          <OkkergokkerFooter backgroundColor={DEFAULT_BG} footerStyle={{ paddingBottom: 0 }} />
+        <div className="bg-background pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] sm:pb-6">
+          <OkkergokkerFooter footerStyle={{ paddingBottom: 0 }} />
         </div>
       </main>
 
       <div
         aria-hidden
-        className="fixed inset-x-0 bottom-0 z-40 md:hidden pointer-events-none"
-        style={{
-          height: "env(safe-area-inset-bottom)",
-          backgroundColor: bg,
-        }}
+        className="fixed inset-x-0 bottom-0 z-40 bg-background md:hidden pointer-events-none"
+        style={{ height: "env(safe-area-inset-bottom)" }}
       />
     </div>
   );
