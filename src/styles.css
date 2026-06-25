@@ -192,6 +192,16 @@
     transform: translateY(0);
   }
 
+  @media (max-width: 767px) {
+    .fade-up {
+      transform: none;
+      transition: opacity 900ms ease-out;
+    }
+    .fade-up.in-view {
+      transform: none;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .fade-up {
       opacity: 1;
@@ -202,7 +212,6 @@
 
   .content-swap {
     animation: content-swap-in 720ms cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: transform, opacity;
   }
 }
 
@@ -218,6 +227,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .content-swap {
+    animation: none;
+  }
+}
+
+@media (max-width: 767px) {
   .content-swap {
     animation: none;
   }

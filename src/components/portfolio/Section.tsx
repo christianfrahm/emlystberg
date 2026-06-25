@@ -77,6 +77,7 @@ export function Section({
 }: SectionProps) {
   const ref = useRef<HTMLElement | null>(null);
   const loadedSourcesRef = useRef<Set<string>>(new Set());
+  const enterDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const currentImage = images[activeImageIndex] ?? images[0];
   const currentBody = bodyByImage?.[activeImageIndex] ?? body;
@@ -89,7 +90,8 @@ export function Section({
   const hasVideo = Boolean(video);
   const hasMedia = hasImage || hasVideo;
   const mediaAspect = currentImage?.aspect ?? video?.aspect ?? "";
-  const mediaFrameClassName = "w-full h-[52vh] sm:h-[60vh] md:h-[80vh]";
+  const mediaFrameClassName =
+    "w-full max-md:aspect-[3/4] max-md:h-auto md:h-[80vh]";
   const mediaFitClassName = "block h-full w-full object-contain";
   const videoFitClassName =
     video?.objectFit === "contain"
@@ -98,7 +100,7 @@ export function Section({
   const useArtworkVideoFrame = video?.artworkFrame ?? true;
   const edgeToEdgeOnMobile =
     video?.edgeToEdgeOnMobile ?? (useArtworkVideoFrame && !hasTextContent);
-  const mediaColumnClassName = "fade-up w-full md:col-span-7";
+  const mediaColumnClassName = "w-full md:col-span-7";
   const artworkFrameClassName = edgeToEdgeOnMobile
     ? "w-full overflow-hidden max-md:aspect-[3/4] max-md:h-auto md:mx-auto md:h-[80vh] md:w-auto md:max-w-full md:aspect-[3/4]"
     : "mx-auto h-[52vh] sm:h-[60vh] md:h-[80vh] w-auto max-w-full aspect-[3/4] overflow-hidden";
@@ -185,9 +187,16 @@ export function Section({
       ? new IntersectionObserver(
           (entries) => {
             for (const entry of entries) {
-              if (entry.isIntersecting && entry.intersectionRatio > 0.45) {
-                onEnter(id, bg);
-              }
+              if (!entry.isIntersecting || entry.intersectionRatio <= 0.45) continue;
+              if (enterDebounceRef.current) clearTimeout(enterDebounceRef.current);
+              enterDebounceRef.current = setTimeout(() => {
+                if (!el.isConnected) return;
+                const rect = el.getBoundingClientRect();
+                const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
+                if (visibleHeight / Math.max(rect.height, 1) > 0.45) {
+                  onEnter(id, bg);
+                }
+              }, 120);
             }
           },
           { threshold: [0.15, 0.5, 0.75], rootMargin: "-10% 0px -10% 0px" },
@@ -198,6 +207,7 @@ export function Section({
     el.querySelectorAll<HTMLElement>(".fade-up").forEach((node) => revealObserver.observe(node));
 
     return () => {
+      if (enterDebounceRef.current) clearTimeout(enterDebounceRef.current);
       revealObserver.disconnect();
       sectionObserver?.disconnect();
     };
@@ -230,7 +240,7 @@ export function Section({
       >
         {hasVideo && (
           <div
-            className={`${mediaColumnClassName} ${
+            className={`fade-up ${mediaColumnClassName} ${
               hasTextContent && imageOnRight ? "md:order-2" : "md:order-1"
             }`}
           >
@@ -256,7 +266,7 @@ export function Section({
               hasTextContent && imageOnRight ? "md:order-2" : "md:order-1"
             }`}
           >
-            <figure className={mediaAspect}>
+            <figure className={`fade-up ${mediaAspect}`.trim()}>
               <div className={mediaFrameClassName}>
                 <img
                   src={currentImage.src}
@@ -266,12 +276,12 @@ export function Section({
                   className={mediaFitClassName}
                 />
               </div>
-              {currentImage.caption && (
-                <figcaption className="mt-3 max-w-3xl whitespace-pre-line text-xs leading-relaxed text-muted-foreground">
-                  {currentImage.caption}
-                </figcaption>
-              )}
             </figure>
+            {currentImage.caption && (
+              <figcaption className="mt-3 max-w-3xl whitespace-pre-line text-xs leading-relaxed text-muted-foreground">
+                {currentImage.caption}
+              </figcaption>
+            )}
 
             {showImageNavigation && images.length > 1 && (
               <div className="mt-6 flex items-center justify-between">
