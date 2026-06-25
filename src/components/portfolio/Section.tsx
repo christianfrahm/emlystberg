@@ -8,6 +8,23 @@ export type SectionImage = {
   aspect?: string;
 };
 
+export type SectionVideo = {
+  src: string;
+  /** Optional aspect override on the outer figure */
+  aspect?: string;
+  /** How the video fills the artwork frame (default: cover to match 3:4 paintings) */
+  objectFit?: "contain" | "cover";
+  /**
+   * Size video in the same 3:4 frame as portrait artworks (default: true).
+   * Portrait phone footage is narrower than paintings and looks smaller with contain.
+   */
+  artworkFrame?: boolean;
+  /** Full viewport width on mobile (default: true for artwork-framed videos) */
+  edgeToEdgeOnMobile?: boolean;
+  /** Hide the section from md breakpoint and up */
+  mobileOnly?: boolean;
+};
+
 export interface SectionProps {
   id: string;
   /** CSS color (use var(--xxx)) used as the section background while in view */
@@ -18,6 +35,7 @@ export interface SectionProps {
   body?: ReactNode;
   bodyByImage?: ReactNode[];
   images?: SectionImage[];
+  video?: SectionVideo;
   /** Layout variant for image/text composition */
   variant?: "fullscreen" | "spread" | "gallery" | "text" | "split";
   /** Places image column on right side at md+ sizes */
@@ -46,6 +64,7 @@ export function Section({
   body,
   bodyByImage,
   images = [],
+  video,
   variant = "spread",
   imageOnRight = false,
   showImageNavigation = true,
@@ -67,6 +86,22 @@ export function Section({
   const preloadFingerprint = preloadImageSources?.join("|") ?? "";
   const hasTextContent = Boolean(eyebrow || title || caption || currentBody);
   const hasImage = Boolean(currentImage);
+  const hasVideo = Boolean(video);
+  const hasMedia = hasImage || hasVideo;
+  const mediaAspect = currentImage?.aspect ?? video?.aspect ?? "";
+  const mediaFrameClassName = "w-full h-[52vh] sm:h-[60vh] md:h-[80vh]";
+  const mediaFitClassName = "block h-full w-full object-contain";
+  const videoFitClassName =
+    video?.objectFit === "contain"
+      ? "block h-full w-full object-contain"
+      : "block h-full w-full object-cover";
+  const useArtworkVideoFrame = video?.artworkFrame ?? true;
+  const edgeToEdgeOnMobile =
+    video?.edgeToEdgeOnMobile ?? (useArtworkVideoFrame && !hasTextContent);
+  const mediaColumnClassName = "fade-up w-full md:col-span-7";
+  const artworkFrameClassName = edgeToEdgeOnMobile
+    ? "w-full overflow-hidden max-md:aspect-[3/4] max-md:h-auto md:mx-auto md:h-[80vh] md:w-auto md:max-w-full md:aspect-[3/4]"
+    : "mx-auto h-[52vh] sm:h-[60vh] md:h-[80vh] w-auto max-w-full aspect-[3/4] overflow-hidden";
 
   const loadImage = useCallback((src: string) => {
     if (typeof window === "undefined") return Promise.resolve();
@@ -157,7 +192,11 @@ export function Section({
       ref={ref}
       id={id}
       className={[
-        "relative w-full px-5 sm:px-6 md:px-16 lg:px-24 flex flex-col",
+        "relative w-full flex flex-col",
+        edgeToEdgeOnMobile && hasVideo
+          ? "max-md:px-0 px-5 sm:px-6 md:px-16 lg:px-24"
+          : "px-5 sm:px-6 md:px-16 lg:px-24",
+        video?.mobileOnly ? "md:hidden" : "",
         naturalHeight
           ? "min-h-0 justify-start"
           : naturalHeightOnMobile
@@ -168,25 +207,49 @@ export function Section({
     >
       <div
         className={
-          hasImage && hasTextContent
+          hasMedia
             ? "grid md:grid-cols-12 gap-8 md:gap-16 items-center"
             : "flex justify-center"
         }
       >
-        {hasImage && (
+        {hasVideo && (
           <div
-            className={`fade-up ${hasTextContent ? "md:col-span-7" : "w-full max-w-3xl"} ${
+            className={`${mediaColumnClassName} ${
               hasTextContent && imageOnRight ? "md:order-2" : "md:order-1"
             }`}
           >
-            <figure className={currentImage.aspect ?? ""}>
-              <img
-                src={currentImage.src}
-                alt={currentImage.alt}
-                loading={images.length > 1 || transitionKey !== undefined ? "eager" : "lazy"}
-                decoding="async"
-                className="w-full h-[52vh] sm:h-[60vh] md:h-[80vh] object-contain"
-              />
+            <figure className={mediaAspect}>
+              <div className={useArtworkVideoFrame ? artworkFrameClassName : mediaFrameClassName}>
+                <video
+                  src={video.src}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  aria-hidden="true"
+                  className={useArtworkVideoFrame ? videoFitClassName : mediaFitClassName}
+                />
+              </div>
+            </figure>
+          </div>
+        )}
+
+        {hasImage && (
+          <div
+            className={`${mediaColumnClassName} ${
+              hasTextContent && imageOnRight ? "md:order-2" : "md:order-1"
+            }`}
+          >
+            <figure className={mediaAspect}>
+              <div className={mediaFrameClassName}>
+                <img
+                  src={currentImage.src}
+                  alt={currentImage.alt}
+                  loading={images.length > 1 || transitionKey !== undefined ? "eager" : "lazy"}
+                  decoding="async"
+                  className={mediaFitClassName}
+                />
+              </div>
               {currentImage.caption && (
                 <figcaption className="mt-3 max-w-3xl whitespace-pre-line text-xs leading-relaxed text-muted-foreground">
                   {currentImage.caption}
@@ -223,8 +286,8 @@ export function Section({
         {hasTextContent && (
           <aside
             className={`fade-up font-serif text-base md:text-lg leading-[1.7] text-foreground/85 space-y-5 md:space-y-6 ${
-              hasImage ? "md:col-span-5" : "w-full max-w-3xl"
-            } ${hasImage && imageOnRight ? "md:order-1" : "md:order-2"}`}
+              hasMedia ? "md:col-span-5" : "w-full max-w-3xl"
+            } ${hasMedia && imageOnRight ? "md:order-1" : "md:order-2"}`}
           >
             {eyebrow && (
               <p className="text-[11px] uppercase tracking-[0.32em] text-muted-foreground font-sans">

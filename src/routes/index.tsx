@@ -8,6 +8,7 @@ import { SITE_BACKGROUND } from "@/lib/site-colors";
 import solskinOgTvivl from "../../pictures/solskin og tvivl/solskin-og-tvivl_635344_1.jpg";
 import tesePoster from "../../pictures/events/tese/SnapInsta.to_670552270_17921748189322817_6741333732493793503_n.jpg";
 import koi from "../../pictures/koi/koi.jpg";
+import kunstVideo from "../../pictures/kunst/img-0217.mp4";
 import gavlmaleri1 from "../../pictures/gavlmaleri/575183774_2910781842451825_8014620892406338350_n.jpg";
 import gavlmaleri2 from "../../pictures/gavlmaleri/576400471_2910781879118488_4065438245366497215_n.jpg";
 import gavlmaleri3 from "../../pictures/gavlmaleri/576469770_2910781889118487_3309273332169913671_n.jpg";
@@ -226,6 +227,13 @@ function Index() {
                 <p>Et værk om en fisk der svømmer, eller måske flyver.</p>
               </>
             }
+          />
+
+          <Section
+            id="kunst-video"
+            bg={SECTION_BG}
+            onEnter={() => onCategoryEnter("kunst")}
+            video={{ src: kunstVideo, mobileOnly: true }}
           />
 
           <Section
