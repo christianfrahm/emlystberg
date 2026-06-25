@@ -65,18 +65,19 @@ const FOOTER_STYLES = `
 }
 
 .okkergokker-footer__art-wrap {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
+  position: relative;
   min-height: 8.5rem;
   height: 8.5rem;
   max-width: 100%;
   margin: 0 auto;
-  overflow: visible;
+  overflow: hidden;
   color: var(--okkergokker-footer-art);
 }
 
 .okkergokker-footer__art {
+  position: absolute;
+  left: 50%;
+  top: 0;
   margin: 0;
   padding: 0;
   border: 0;
@@ -84,7 +85,7 @@ const FOOTER_STYLES = `
   font-size: 1rem;
   line-height: 1;
   white-space: pre;
-  transform: translateY(-0.5rem) scale(0.48, 0.57);
+  transform: translateX(-50%) translateY(-0.5rem) scale(0.48, 0.57);
   transform-origin: top center;
 }
 
@@ -113,11 +114,11 @@ const FOOTER_STYLES = `
   .okkergokker-footer__art-wrap {
     min-height: 12rem;
     height: 12rem;
-    overflow: visible;
+    overflow: hidden;
   }
 
   .okkergokker-footer__art {
-    transform: translateY(-0.75rem) scale(0.66, 0.75);
+    transform: translateX(-50%) translateY(-0.75rem) scale(0.66, 0.75);
   }
 
   .okkergokker-footer__link {

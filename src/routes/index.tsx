@@ -233,6 +233,8 @@ function Index() {
             id="kunst-video"
             bg={SECTION_BG}
             onEnter={() => onCategoryEnter("kunst")}
+            naturalHeightOnMobile
+            sectionClassName="max-md:py-12 py-24 sm:py-28 md:py-40"
             video={{ src: kunstVideo, mobileOnly: true }}
           />
 

@@ -169,22 +169,38 @@ export function Section({
   useEffect(() => {
     if (!ref.current) return;
     const el = ref.current;
-    const io = new IntersectionObserver(
+
+    const revealObserver = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("in-view");
-            if (entry.intersectionRatio > 0.45) onEnter?.(id, bg);
-          } else {
-            entry.target.classList.remove("in-view");
-          }
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add("in-view");
+          revealObserver.unobserve(entry.target);
         }
       },
-      { threshold: [0.15, 0.5, 0.75], rootMargin: "-10% 0px -10% 0px" },
+      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
     );
-    io.observe(el);
-    el.querySelectorAll<HTMLElement>(".fade-up").forEach((n) => io.observe(n));
-    return () => io.disconnect();
+
+    const sectionObserver = onEnter
+      ? new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting && entry.intersectionRatio > 0.45) {
+                onEnter(id, bg);
+              }
+            }
+          },
+          { threshold: [0.15, 0.5, 0.75], rootMargin: "-10% 0px -10% 0px" },
+        )
+      : null;
+
+    sectionObserver?.observe(el);
+    el.querySelectorAll<HTMLElement>(".fade-up").forEach((node) => revealObserver.observe(node));
+
+    return () => {
+      revealObserver.disconnect();
+      sectionObserver?.disconnect();
+    };
   }, [id, bg, onEnter]);
 
   return (

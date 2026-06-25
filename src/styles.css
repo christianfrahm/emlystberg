@@ -192,6 +192,14 @@
     transform: translateY(0);
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .fade-up {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
   .content-swap {
     animation: content-swap-in 720ms cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform, opacity;
