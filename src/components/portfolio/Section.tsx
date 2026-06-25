@@ -284,25 +284,43 @@ export function Section({
             )}
 
             {showImageNavigation && images.length > 1 && (
-              <div className="mt-6 flex items-center justify-between">
+              <div className="mt-6 flex items-center justify-center gap-5">
                 <button
                   type="button"
                   onClick={showPrevImage}
-                  className="px-4 py-2 border border-foreground/40 font-sans text-xs uppercase tracking-[0.18em] cursor-pointer transition-colors hover:bg-foreground/5"
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-foreground/70 transition-colors hover:text-foreground cursor-pointer"
                   aria-label="Forrige billede"
                 >
-                  ← Forrige
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
+                    <path
+                      d="M15 18l-6-6 6-6"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </button>
-                <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground font-sans">
+                <p className="w-[5rem] shrink-0 text-center tabular-nums text-[11px] uppercase tracking-[0.24em] text-muted-foreground font-sans">
                   {activeImageIndex + 1} / {images.length}
                 </p>
                 <button
                   type="button"
                   onClick={showNextImage}
-                  className="px-4 py-2 border border-foreground/40 font-sans text-xs uppercase tracking-[0.18em] cursor-pointer transition-colors hover:bg-foreground/5"
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-foreground/70 transition-colors hover:text-foreground cursor-pointer"
                   aria-label="Næste billede"
                 >
-                  Næste →
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
+                    <path
+                      d="M9 18l6-6-6-6"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </button>
               </div>
             )}

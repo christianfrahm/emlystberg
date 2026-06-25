@@ -112,13 +112,13 @@ const FOOTER_STYLES = `
   }
 
   .okkergokker-footer__art-wrap {
-    min-height: 12rem;
-    height: 12rem;
-    overflow: hidden;
+    min-height: 13.5rem;
+    height: 13.5rem;
+    overflow: visible;
   }
 
   .okkergokker-footer__art {
-    transform: translateX(-50%) translateY(-0.75rem) scale(0.66, 0.75);
+    transform: translateX(-50%) translateY(0) scale(0.66, 0.75);
   }
 
   .okkergokker-footer__link {
