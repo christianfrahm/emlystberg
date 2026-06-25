@@ -66,11 +66,11 @@ const FOOTER_STYLES = `
 
 .okkergokker-footer__art-wrap {
   position: relative;
-  min-height: 8.5rem;
-  height: 8.5rem;
+  min-height: 10rem;
+  height: 10rem;
   max-width: 100%;
   margin: 0 auto;
-  overflow: hidden;
+  overflow: visible;
   color: var(--okkergokker-footer-art);
 }
 
@@ -85,7 +85,7 @@ const FOOTER_STYLES = `
   font-size: 1rem;
   line-height: 1;
   white-space: pre;
-  transform: translateX(-50%) translateY(-0.5rem) scale(0.48, 0.57);
+  transform: translateX(-50%) translateY(0) scale(0.48, 0.57);
   transform-origin: top center;
 }
 
