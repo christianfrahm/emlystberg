@@ -1,4 +1,74 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { markImagePreloaded, preloadImage } from "@/lib/preload-images";
+
+type CarouselRegistration = {
+  getActiveIndex: () => number;
+  getLength: () => number;
+  goTo: (index: number) => void;
+};
+
+const carouselRegistry = new Map<string, CarouselRegistration>();
+let carouselKeyListenerAttached = false;
+
+function isCarouselInContext(el: HTMLElement) {
+  const rect = el.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return false;
+
+  const viewportCenter = window.innerHeight / 2;
+  return rect.top <= viewportCenter && rect.bottom >= viewportCenter;
+}
+
+function getPrimaryVisibleCarousel() {
+  const carousels = document.querySelectorAll<HTMLElement>("[data-image-carousel]");
+  let best: HTMLElement | null = null;
+  let bestDistance = Number.POSITIVE_INFINITY;
+
+  for (const carousel of carousels) {
+    if (!isCarouselInContext(carousel)) continue;
+    const rect = carousel.getBoundingClientRect();
+    const distance = Math.abs(rect.top + rect.height / 2 - window.innerHeight / 2);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = carousel;
+    }
+  }
+
+  return best;
+}
+
+function handleCarouselKeyDown(event: KeyboardEvent) {
+  if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+  if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) return;
+
+  const carouselEl = getPrimaryVisibleCarousel();
+  if (!carouselEl) return;
+
+  const sectionId = carouselEl.dataset.imageCarousel;
+  if (!sectionId) return;
+
+  const registration = carouselRegistry.get(sectionId);
+  if (!registration || registration.getLength() <= 1) return;
+
+  const index = registration.getActiveIndex();
+  const length = registration.getLength();
+  const nextIndex =
+    event.key === "ArrowLeft" ? (index - 1 + length) % length : (index + 1) % length;
+
+  event.preventDefault();
+  registration.goTo(nextIndex);
+}
+
+function registerCarousel(sectionId: string, registration: CarouselRegistration) {
+  carouselRegistry.set(sectionId, registration);
+  if (!carouselKeyListenerAttached && typeof window !== "undefined") {
+    document.addEventListener("keydown", handleCarouselKeyDown, true);
+    carouselKeyListenerAttached = true;
+  }
+
+  return () => {
+    carouselRegistry.delete(sectionId);
+  };
+}
 
 export type SectionImage = {
   src: string;
@@ -76,8 +146,13 @@ export function Section({
   naturalHeight = false,
 }: SectionProps) {
   const ref = useRef<HTMLElement | null>(null);
-  const loadedSourcesRef = useRef<Set<string>>(new Set());
   const enterDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const carouselNavRef = useRef({
+    activeImageIndex: 0,
+    imagesLength: 0,
+    goTo: (_index: number) => {},
+  });
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const currentImage = images[activeImageIndex] ?? images[0];
   const currentBody = bodyByImage?.[activeImageIndex] ?? body;
@@ -105,45 +180,67 @@ export function Section({
     ? "w-full overflow-hidden max-md:aspect-[3/4] max-md:h-auto md:mx-auto md:h-[80vh] md:w-auto md:max-w-full md:aspect-[3/4]"
     : "mx-auto h-[52vh] sm:h-[60vh] md:h-[80vh] w-auto max-w-full aspect-[3/4] overflow-hidden";
 
-  const loadImage = useCallback((src: string) => {
-    if (typeof window === "undefined") return Promise.resolve();
-    if (loadedSourcesRef.current.has(src)) return Promise.resolve();
+  const loadImage = useCallback((src: string) => preloadImage(src), []);
 
-    return new Promise<void>((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        void (async () => {
-          try {
-            if ("decode" in img) await img.decode();
-          } catch {
-            /* decode can reject for unsupported formats; image may still paint */
-          }
-          loadedSourcesRef.current.add(src);
-          resolve();
-        })();
-      };
-      img.onerror = () => {
-        loadedSourcesRef.current.add(src);
-        resolve();
-      };
-      img.src = src;
-    });
-  }, []);
+  const goToImageIndex = useCallback(
+    (index: number) => {
+      if (index === activeImageIndex) return;
+      if (!images[index]) return;
+      setActiveImageIndex(index);
+    },
+    [activeImageIndex, images],
+  );
 
-  const showPrevImage = () => {
-    if (images.length <= 1) return;
-    const next = (activeImageIndex - 1 + images.length) % images.length;
-    const nextSrc = images[next]?.src;
-    if (!nextSrc) return;
-    void loadImage(nextSrc).then(() => setActiveImageIndex(next));
+  carouselNavRef.current = {
+    activeImageIndex,
+    imagesLength: images.length,
+    goTo: goToImageIndex,
   };
 
-  const showNextImage = () => {
+  useEffect(() => {
     if (images.length <= 1) return;
-    const next = (activeImageIndex + 1) % images.length;
-    const nextSrc = images[next]?.src;
-    if (!nextSrc) return;
-    void loadImage(nextSrc).then(() => setActiveImageIndex(next));
+
+    return registerCarousel(id, {
+      getActiveIndex: () => carouselNavRef.current.activeImageIndex,
+      getLength: () => carouselNavRef.current.imagesLength,
+      goTo: (index) => carouselNavRef.current.goTo(index),
+    });
+  }, [id, images.length]);
+
+  const handleImageTouchStart = (event: React.TouchEvent<HTMLElement>) => {
+    if (images.length <= 1) return;
+    if (typeof window !== "undefined" && !window.matchMedia("(max-width: 767px)").matches) return;
+
+    const touch = event.touches[0];
+    if (!touch) return;
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleImageTouchEnd = (event: React.TouchEvent<HTMLElement>) => {
+    if (!touchStartRef.current || images.length <= 1) return;
+    if (typeof window !== "undefined" && !window.matchMedia("(max-width: 767px)").matches) return;
+
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    const deltaY = touch.clientY - touchStartRef.current.y;
+    touchStartRef.current = null;
+
+    const swipeThreshold = 48;
+    if (Math.abs(deltaX) < swipeThreshold) return;
+    if (Math.abs(deltaX) <= Math.abs(deltaY)) return;
+
+    if (deltaX < 0) {
+      goToImageIndex((activeImageIndex + 1) % images.length);
+      return;
+    }
+
+    goToImageIndex((activeImageIndex - 1 + images.length) % images.length);
+  };
+
+  const handleImageTouchCancel = () => {
+    touchStartRef.current = null;
   };
 
   useEffect(() => {
@@ -153,16 +250,16 @@ export function Section({
     });
   }, [images.length]);
 
-  useEffect(() => {
-    const sources = preloadImageSources ?? images.map((image) => image.src);
-    if (sources.length === 0) return;
+  useLayoutEffect(() => {
+    if (images.length <= 1) return;
 
+    const sources = preloadImageSources ?? images.map((image) => image.src);
     for (const source of sources) {
       void loadImage(source);
     }
-  }, [imageSrcFingerprint, preloadFingerprint, loadImage]); // eslint-disable-line react-hooks/exhaustive-deps -- fingerprints replace unstable array refs
+  }, [imageSrcFingerprint, preloadFingerprint, images.length, loadImage]); // eslint-disable-line react-hooks/exhaustive-deps -- fingerprints replace unstable array refs
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const src = currentImage?.src;
     if (!src) return;
     void loadImage(src);
@@ -232,6 +329,7 @@ export function Section({
       ].join(" ")}
     >
       <div
+        data-subsection-content
         className={
           hasMedia
             ? "grid md:grid-cols-12 gap-8 md:gap-16 items-center"
@@ -266,15 +364,46 @@ export function Section({
               hasTextContent && imageOnRight ? "md:order-2" : "md:order-1"
             }`}
           >
-            <figure className={`fade-up ${mediaAspect}`.trim()}>
-              <div className={mediaFrameClassName}>
-                <img
-                  src={currentImage.src}
-                  alt={currentImage.alt}
-                  loading={images.length > 1 || transitionKey !== undefined ? "eager" : "lazy"}
-                  decoding="async"
-                  className={mediaFitClassName}
-                />
+            <div data-image-carousel={images.length > 1 ? id : undefined}>
+            <figure
+              className={`fade-up ${mediaAspect} ${images.length > 1 ? "max-md:touch-pan-y" : ""}`.trim()}
+              onTouchStart={images.length > 1 ? handleImageTouchStart : undefined}
+              onTouchEnd={images.length > 1 ? handleImageTouchEnd : undefined}
+              onTouchCancel={images.length > 1 ? handleImageTouchCancel : undefined}
+            >
+              <div
+                className={`${mediaFrameClassName}${images.length > 1 ? " relative" : ""}`.trim()}
+              >
+                {images.length > 1 ? (
+                  images.map((image, index) => {
+                    const isActive = index === activeImageIndex;
+                    return (
+                      <img
+                        key={image.src}
+                        src={image.src}
+                        alt={isActive ? image.alt : ""}
+                        aria-hidden={isActive ? undefined : true}
+                        loading="eager"
+                        decoding="async"
+                        onLoad={() => markImagePreloaded(image.src)}
+                        className={[
+                          mediaFitClassName,
+                          isActive
+                            ? "relative z-10 opacity-100"
+                            : "absolute inset-0 z-0 opacity-0 pointer-events-none",
+                        ].join(" ")}
+                      />
+                    );
+                  })
+                ) : (
+                  <img
+                    src={currentImage.src}
+                    alt={currentImage.alt}
+                    loading="lazy"
+                    decoding="async"
+                    className={mediaFitClassName}
+                  />
+                )}
               </div>
             </figure>
             {currentImage.caption && (
@@ -284,46 +413,29 @@ export function Section({
             )}
 
             {showImageNavigation && images.length > 1 && (
-              <div className="mt-6 flex items-center justify-center gap-5">
-                <button
-                  type="button"
-                  onClick={showPrevImage}
-                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-foreground/70 transition-colors hover:text-foreground cursor-pointer"
-                  aria-label="Forrige billede"
-                >
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
-                    <path
-                      d="M15 18l-6-6 6-6"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-                <p className="w-[5rem] shrink-0 text-center tabular-nums text-[11px] uppercase tracking-[0.24em] text-muted-foreground font-sans">
-                  {activeImageIndex + 1} / {images.length}
-                </p>
-                <button
-                  type="button"
-                  onClick={showNextImage}
-                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-foreground/70 transition-colors hover:text-foreground cursor-pointer"
-                  aria-label="Næste billede"
-                >
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
-                    <path
-                      d="M9 18l6-6-6-6"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
+              <div
+                className="mt-6 flex items-center justify-center gap-2.5"
+                role="group"
+                aria-label="Billednavigation"
+              >
+                {images.map((image, index) => (
+                  <button
+                    key={image.src}
+                    type="button"
+                    onClick={() => goToImageIndex(index)}
+                    className={[
+                      "rounded-full transition-all duration-300 ease-out cursor-pointer",
+                      index === activeImageIndex
+                        ? "h-2 w-6 bg-foreground"
+                        : "h-2 w-2 bg-foreground/25 hover:bg-foreground/40",
+                    ].join(" ")}
+                    aria-label={`Billede ${index + 1} af ${images.length}`}
+                    aria-current={index === activeImageIndex ? "true" : undefined}
+                  />
+                ))}
               </div>
             )}
+            </div>
           </div>
         )}
 

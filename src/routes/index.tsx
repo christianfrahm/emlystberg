@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { OkkergokkerFooter } from "@/components/okkergokker-footer";
 import { Sidebar, type NavItem } from "@/components/portfolio/Sidebar";
 import { Section } from "@/components/portfolio/Section";
+import { setupSubsectionKeyboardNav, consumeInitialHashScroll, stripUrlHash } from "@/lib/section-scroll";
+import { preloadImages } from "@/lib/preload-images";
 import { SITE_BACKGROUND } from "@/lib/site-colors";
 
 import solskinOgTvivl from "../../pictures/solskin og tvivl/solskin-og-tvivl_635344_1.jpg";
@@ -49,6 +51,35 @@ const NAV: NavItem[] = [
 ];
 
 const SECTION_IDS = ["intro", ...NAV.map((item) => item.id)];
+
+/** Scroll order for ArrowDown — individual portfolio sections, not category headers. */
+const SUBSECTION_IDS = [
+  "intro",
+  "solskin",
+  "koi",
+  "kunst-video",
+  "gavlmaleri",
+  "events",
+  "akryl",
+];
+
+const CAROUSEL_IMAGE_SOURCES = [
+  gavlmaleri1,
+  gavlmaleri2,
+  gavlmaleri3,
+  gavlmaleri4,
+  gavlmaleri5,
+  luca,
+  amalie,
+  lucas,
+  sarah,
+  marcus,
+  nicoline,
+  carl,
+  frederik,
+  kathrine,
+  viktor,
+];
 const CURRENT_EVENT = {
   title: (
     <>
@@ -123,8 +154,20 @@ function Index() {
     setActiveId(bestId);
   }, [activeId]);
 
+  useEffect(() => {
+    void preloadImages(CAROUSEL_IMAGE_SOURCES);
+    consumeInitialHashScroll();
+    const stripHashOnChange = () => stripUrlHash();
+    window.addEventListener("hashchange", stripHashOnChange);
+    const cleanupKeyboard = setupSubsectionKeyboardNav(SUBSECTION_IDS);
+    return () => {
+      window.removeEventListener("hashchange", stripHashOnChange);
+      cleanupKeyboard();
+    };
+  }, []);
+
   return (
-    <div id="top" className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <div className="md:flex md:items-start">
         <Sidebar items={NAV} activeId={activeId} onMenuClose={syncSectionFromViewport} />
 

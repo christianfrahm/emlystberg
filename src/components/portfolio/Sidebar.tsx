@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { isMobileViewport, scrollToSection, scrollToTop } from "@/lib/section-scroll";
 
 export type NavItem = { id: string; label: string; year?: string };
 
@@ -18,63 +19,17 @@ export function Sidebar({
   onMenuStateChange,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const isMobileViewport = useCallback(() => window.matchMedia("(max-width: 767px)").matches, []);
   const notifyMenuClosed = useCallback(() => {
     requestAnimationFrame(() => onMenuClose?.());
   }, [onMenuClose]);
 
-  const getCenteredTop = useCallback((target: HTMLElement) => {
-    if (target.dataset.scrollAlign === "start") {
-      return target.getBoundingClientRect().top + window.scrollY;
-    }
-
-    const rect = target.getBoundingClientRect();
-    const absoluteTop = rect.top + window.scrollY;
-    const centeredTop = absoluteTop + Math.max(0, (rect.height - window.innerHeight) / 2);
-    const maxScrollTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-    return Math.min(centeredTop, maxScrollTop);
-  }, []);
-
   const scrollWithOffset = useCallback(
     (targetId: string) => {
-      const target = document.getElementById(targetId);
-      if (!target) return;
-
-      const targetTop = isMobileViewport()
-        ? target.getBoundingClientRect().top + window.scrollY
-        : getCenteredTop(target);
-      window.scrollTo({ top: targetTop, behavior: "smooth" });
-      window.history.replaceState(null, "", `#${targetId}`);
-
-      const settleAndCorrect = () => {
-        const correctedTop = isMobileViewport()
-          ? target.getBoundingClientRect().top + window.scrollY
-          : getCenteredTop(target);
-        if (Math.abs(window.scrollY - correctedTop) > 2) {
-          window.scrollTo({ top: correctedTop, behavior: "auto" });
-        }
-      };
-
-      requestAnimationFrame(() => requestAnimationFrame(settleAndCorrect));
-      window.setTimeout(settleAndCorrect, 450);
+      scrollToSection(targetId);
+      notifyMenuClosed();
     },
-    [getCenteredTop, isMobileViewport],
+    [notifyMenuClosed],
   );
-
-  const alignHashTargetToCenter = useCallback(() => {
-    const hash = window.location.hash.replace(/^#/, "");
-    if (!hash) return;
-
-    const target = document.getElementById(hash);
-    if (!target) return;
-
-    const correctedTop = isMobileViewport()
-      ? target.getBoundingClientRect().top + window.scrollY
-      : getCenteredTop(target);
-    if (Math.abs(window.scrollY - correctedTop) > 2) {
-      window.scrollTo({ top: correctedTop, behavior: "auto" });
-    }
-  }, [getCenteredTop, isMobileViewport]);
 
   useEffect(() => {
     setOpen(false);
@@ -87,27 +42,8 @@ export function Sidebar({
     onMenuStateChange?.(open);
   }, [open, onMenuStateChange]);
 
-  useEffect(() => {
-    const runInitialAlignment = () => {
-      requestAnimationFrame(() => requestAnimationFrame(alignHashTargetToCenter));
-      window.setTimeout(alignHashTargetToCenter, 250);
-      window.setTimeout(alignHashTargetToCenter, 600);
-      window.setTimeout(alignHashTargetToCenter, 1200);
-    };
-
-    runInitialAlignment();
-    window.addEventListener("hashchange", runInitialAlignment);
-    window.addEventListener("load", runInitialAlignment);
-
-    return () => {
-      window.removeEventListener("hashchange", runInitialAlignment);
-      window.removeEventListener("load", runInitialAlignment);
-    };
-  }, [alignHashTargetToCenter]);
-
   const scrollToTopForMenu = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    window.history.replaceState(null, "", "#top");
+    scrollToTop();
     notifyMenuClosed();
   }, [notifyMenuClosed]);
 
@@ -139,20 +75,19 @@ export function Sidebar({
             const active = activeId === item.id;
             return (
               <li key={item.id}>
-                <a
-                  href={`#${item.id}`}
+                <button
+                  type="button"
                   className={[
-                    "block py-0.5 transition-colors",
+                    "block py-0.5 text-left transition-colors",
                     active ? "text-foreground" : "text-foreground/55",
                   ].join(" ")}
-                  onClick={(event) => {
-                    event.preventDefault();
+                  onClick={() => {
                     scrollWithOffset(item.id);
                     notifyMenuClosed();
                   }}
                 >
                   {item.label}
-                </a>
+                </button>
               </li>
             );
           })}
@@ -174,13 +109,11 @@ export function Sidebar({
         }
       >
         <div>
-          <a
-            href="#top"
-            className="block"
-            onClick={(event) => {
-              event.preventDefault();
-              window.scrollTo({ top: 0, behavior: "smooth" });
-              window.history.replaceState(null, "", "#top");
+          <button
+            type="button"
+            className="block text-left"
+            onClick={() => {
+              scrollToTop();
               setOpen(false);
               if (isMobileViewport()) {
                 notifyMenuClosed();
@@ -192,7 +125,7 @@ export function Sidebar({
               <br />
               lystberg
             </h1>
-          </a>
+          </button>
         </div>
 
         <nav className="my-12 md:my-0">
@@ -201,11 +134,10 @@ export function Sidebar({
               const active = activeId === item.id;
               return (
                 <li key={item.id}>
-                  <a
-                    href={`#${item.id}`}
-                    className="group block py-1.5"
-                    onClick={(event) => {
-                      event.preventDefault();
+                  <button
+                    type="button"
+                    className="group block py-1.5 text-left"
+                    onClick={() => {
                       scrollWithOffset(item.id);
                       setOpen(false);
                       if (isMobileViewport()) {
@@ -237,7 +169,7 @@ export function Sidebar({
                         )}
                       </span>
                     </div>
-                  </a>
+                  </button>
                 </li>
               );
             })}

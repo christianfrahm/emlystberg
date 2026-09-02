@@ -213,6 +213,12 @@
   .content-swap {
     animation: content-swap-in 720ms cubic-bezier(0.22, 1, 0.36, 1);
   }
+
+  .scroll-gallery-slide {
+    transition: transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+    backface-visibility: hidden;
+  }
 }
 
 @keyframes content-swap-in {
@@ -229,6 +235,10 @@
 @media (prefers-reduced-motion: reduce) {
   .content-swap {
     animation: none;
+  }
+
+  .scroll-gallery-slide {
+    transition: none;
   }
 }
 
