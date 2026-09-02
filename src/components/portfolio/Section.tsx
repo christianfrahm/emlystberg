@@ -154,6 +154,7 @@ export function Section({
     goTo: (_index: number) => {},
   });
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [carouselDirection, setCarouselDirection] = useState<1 | -1 | null>(null);
   const currentImage = images[activeImageIndex] ?? images[0];
   const currentBody = bodyByImage?.[activeImageIndex] ?? body;
   const shouldAnimateBody = transitionKey !== undefined || Boolean(bodyByImage);
@@ -182,13 +183,22 @@ export function Section({
 
   const loadImage = useCallback((src: string) => preloadImage(src), []);
 
+  const getCarouselDirection = useCallback((from: number, to: number, length: number): 1 | -1 => {
+    if (length <= 1) return 1;
+    const delta = to - from;
+    if (delta === 0) return 1;
+    if (Math.abs(delta) <= length / 2) return delta > 0 ? 1 : -1;
+    return delta > 0 ? -1 : 1;
+  }, []);
+
   const goToImageIndex = useCallback(
     (index: number) => {
       if (index === activeImageIndex) return;
       if (!images[index]) return;
+      setCarouselDirection(getCarouselDirection(activeImageIndex, index, images.length));
       setActiveImageIndex(index);
     },
-    [activeImageIndex, images],
+    [activeImageIndex, getCarouselDirection, images],
   );
 
   carouselNavRef.current = {
@@ -373,6 +383,7 @@ export function Section({
             >
               <div
                 className={`${mediaFrameClassName}${images.length > 1 ? " relative" : ""}`.trim()}
+                data-carousel-direction={carouselDirection ?? undefined}
               >
                 {images.length > 1 ? (
                   images.map((image, index) => {
@@ -386,11 +397,13 @@ export function Section({
                         loading="eager"
                         decoding="async"
                         onLoad={() => markImagePreloaded(image.src)}
+                        data-enter={
+                          isActive && carouselDirection !== null ? carouselDirection : undefined
+                        }
                         className={[
                           mediaFitClassName,
-                          isActive
-                            ? "relative z-10 opacity-100"
-                            : "absolute inset-0 z-0 opacity-0 pointer-events-none",
+                          "carousel-image",
+                          isActive ? "carousel-image-active" : "carousel-image-inactive",
                         ].join(" ")}
                       />
                     );
