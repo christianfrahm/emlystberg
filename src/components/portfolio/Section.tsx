@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { markImagePreloaded, preloadImage } from "@/lib/preload-images";
+import { markImagePreloaded, preloadImage, waitForImageReady } from "@/lib/preload-images";
 
 type CarouselRegistration = {
   getActiveIndex: () => number;
@@ -148,6 +148,8 @@ export function Section({
   const ref = useRef<HTMLElement | null>(null);
   const enterDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const carouselFrameRef = useRef<HTMLDivElement | null>(null);
+  const carouselTransitionRef = useRef(false);
   const carouselNavRef = useRef({
     activeImageIndex: 0,
     imagesLength: 0,
@@ -183,6 +185,12 @@ export function Section({
 
   const loadImage = useCallback((src: string) => preloadImage(src), []);
 
+  const getCarouselImageElement = useCallback((src: string) => {
+    return carouselFrameRef.current?.querySelector<HTMLImageElement>(
+      `img[src="${CSS.escape(src)}"]`,
+    );
+  }, []);
+
   const getCarouselDirection = useCallback((from: number, to: number, length: number): 1 | -1 => {
     if (length <= 1) return 1;
     const delta = to - from;
@@ -193,12 +201,26 @@ export function Section({
 
   const goToImageIndex = useCallback(
     (index: number) => {
-      if (index === activeImageIndex) return;
-      if (!images[index]) return;
-      setCarouselDirection(getCarouselDirection(activeImageIndex, index, images.length));
-      setActiveImageIndex(index);
+      if (index === activeImageIndex || carouselTransitionRef.current) return;
+      const image = images[index];
+      if (!image) return;
+
+      const direction = getCarouselDirection(activeImageIndex, index, images.length);
+      carouselTransitionRef.current = true;
+
+      void waitForImageReady(image.src, getCarouselImageElement(image.src)).then(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setCarouselDirection(direction);
+            setActiveImageIndex(index);
+            window.setTimeout(() => {
+              carouselTransitionRef.current = false;
+            }, 480);
+          });
+        });
+      });
     },
-    [activeImageIndex, getCarouselDirection, images],
+    [activeImageIndex, getCarouselDirection, getCarouselImageElement, images],
   );
 
   carouselNavRef.current = {
@@ -272,8 +294,17 @@ export function Section({
   useLayoutEffect(() => {
     const src = currentImage?.src;
     if (!src) return;
-    void loadImage(src);
-  }, [currentImage?.src, loadImage]);
+    void waitForImageReady(src, getCarouselImageElement(src));
+  }, [currentImage?.src, getCarouselImageElement]);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+
+    const next = images[(activeImageIndex + 1) % images.length];
+    const prev = images[(activeImageIndex - 1 + images.length) % images.length];
+    if (next) void loadImage(next.src);
+    if (prev) void loadImage(prev.src);
+  }, [activeImageIndex, images, loadImage]);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -382,6 +413,7 @@ export function Section({
               onTouchCancel={images.length > 1 ? handleImageTouchCancel : undefined}
             >
               <div
+                ref={carouselFrameRef}
                 className={`${mediaFrameClassName}${images.length > 1 ? " relative" : ""}`.trim()}
                 data-carousel-direction={carouselDirection ?? undefined}
               >

@@ -47,3 +47,38 @@ export function preloadImage(src: string): Promise<void> {
 export function preloadImages(sources: readonly string[]) {
   return Promise.all(sources.map((source) => preloadImage(source)));
 }
+
+export async function waitForImageReady(
+  src: string,
+  domImage?: HTMLImageElement | null,
+): Promise<void> {
+  if (domImage?.complete && domImage.naturalWidth > 0) {
+    markImagePreloaded(src);
+    try {
+      if ("decode" in domImage) await domImage.decode();
+    } catch {
+      /* decode can reject for unsupported formats; image may still paint */
+    }
+    return;
+  }
+
+  await preloadImage(src);
+
+  if (!domImage) return;
+
+  if (!domImage.complete) {
+    await new Promise<void>((resolve) => {
+      const finish = () => resolve();
+      domImage.addEventListener("load", finish, { once: true });
+      domImage.addEventListener("error", finish, { once: true });
+    });
+  }
+
+  try {
+    if ("decode" in domImage) await domImage.decode();
+  } catch {
+    /* decode can reject for unsupported formats; image may still paint */
+  }
+
+  markImagePreloaded(src);
+}
