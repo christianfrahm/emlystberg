@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { isMobileViewport, scrollToSection, scrollToTop } from "@/lib/section-scroll";
 
-export type NavItem = { id: string; label: string; year?: string };
+export type NavItem = { id: string; label: string; year?: string; scrollTargetId?: string };
 
 interface Props {
   items: NavItem[];
@@ -29,6 +29,13 @@ export function Sidebar({
       notifyMenuClosed();
     },
     [notifyMenuClosed],
+  );
+
+  const scrollToItem = useCallback(
+    (item: NavItem) => {
+      scrollWithOffset(item.scrollTargetId ?? item.id);
+    },
+    [scrollWithOffset],
   );
 
   useEffect(() => {
@@ -82,7 +89,7 @@ export function Sidebar({
                     active ? "text-foreground" : "text-foreground/55",
                   ].join(" ")}
                   onClick={() => {
-                    scrollWithOffset(item.id);
+                    scrollToItem(item);
                     notifyMenuClosed();
                   }}
                 >
@@ -138,7 +145,7 @@ export function Sidebar({
                     type="button"
                     className="group block py-1.5 text-left"
                     onClick={() => {
-                      scrollWithOffset(item.id);
+                      scrollToItem(item);
                       setOpen(false);
                       if (isMobileViewport()) {
                         notifyMenuClosed();

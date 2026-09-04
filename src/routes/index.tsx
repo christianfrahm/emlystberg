@@ -44,10 +44,10 @@ export const Route = createFileRoute("/")({
 });
 
 const NAV: NavItem[] = [
-  { id: "litteratur", label: "litteratur" },
-  { id: "kunst", label: "kunst" },
-  { id: "aktuelt", label: "aktuelt" },
-  { id: "tilgaengelige-vaerker", label: "tilgængelige værker" },
+  { id: "litteratur", label: "litteratur", scrollTargetId: "solskin" },
+  { id: "kunst", label: "kunst", scrollTargetId: "koi" },
+  { id: "aktuelt", label: "aktuelt", scrollTargetId: "events" },
+  { id: "tilgaengelige-vaerker", label: "tilgængelige værker", scrollTargetId: "akryl" },
 ];
 
 const SECTION_IDS = ["intro", ...NAV.map((item) => item.id)];
@@ -171,7 +171,8 @@ function Index() {
       <div className="md:flex md:items-start">
         <Sidebar items={NAV} activeId={activeId} onMenuClose={syncSectionFromViewport} />
 
-        <main className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0">
+        <main>
         {/* Intro */}
         <Section
           id="intro"
@@ -360,7 +361,7 @@ function Index() {
             bg={SECTION_BG}
             onEnter={() => onCategoryEnter("tilgaengelige-vaerker")}
             naturalHeight
-            sectionClassName="pt-24 sm:pt-28 md:pt-40 pb-0"
+            sectionClassName="pt-24 sm:pt-28 md:pt-40 pb-10 sm:pb-20 md:pb-[10vh]"
             imageOnRight
             title="Må man sælge sine venner"
             variant="gallery"
@@ -390,10 +391,11 @@ function Index() {
           />
         </PortfolioCategory>
         </main>
-      </div>
 
-      <div className="bg-background pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] sm:pb-6">
-        <OkkergokkerFooter footerStyle={{ paddingBottom: 0 }} />
+        <div className="bg-background pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] sm:pb-6">
+          <OkkergokkerFooter footerStyle={{ paddingBottom: 0 }} />
+        </div>
+        </div>
       </div>
 
       <div

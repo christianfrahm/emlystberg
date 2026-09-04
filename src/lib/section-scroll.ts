@@ -3,6 +3,8 @@ export function isMobileViewport() {
 }
 
 let subsectionScrollInProgress = false;
+let scrollLockReleaseTimer: number | null = null;
+let scrollSettleCleanup: (() => void) | null = null;
 
 function getCleanUrl() {
   return window.location.pathname + window.location.search;
@@ -19,10 +21,8 @@ export function consumeInitialHashScroll() {
   const hashId = window.location.hash.replace(/^#/, "");
   stripUrlHash();
 
-  if (!hashId) return;
-
-  if (hashId === "top") {
-    window.scrollTo({ top: 0, behavior: "auto" });
+  if (!hashId || hashId === "top") {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     return;
   }
 
@@ -32,21 +32,95 @@ export function consumeInitialHashScroll() {
   }
 
   const target = document.getElementById(hashId);
-  if (!target) return;
+  if (!target) {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    return;
+  }
 
   requestAnimationFrame(() => {
     window.scrollTo({ top: getSectionScrollTop(target), behavior: "auto" });
   });
 }
 
-export function scrollToTop() {
-  subsectionScrollInProgress = true;
-  window.scrollTo({ top: 0, behavior: "smooth" });
-  stripUrlHash();
+function clearScrollLockTimers() {
+  if (scrollLockReleaseTimer) {
+    window.clearTimeout(scrollLockReleaseTimer);
+    scrollLockReleaseTimer = null;
+  }
+  if (scrollSettleCleanup) {
+    scrollSettleCleanup();
+    scrollSettleCleanup = null;
+  }
+}
 
-  window.setTimeout(() => {
+function beginScrollLock() {
+  clearScrollLockTimers();
+  subsectionScrollInProgress = true;
+}
+
+/**
+ * Keep arrow-key nav locked until scroll actually settles near `targetTop`
+ * (or until a safety timeout), so rapid up/down presses can't interrupt mid-animation.
+ */
+function releaseScrollLockWhenSettled(targetTop: number, onSettled?: () => void) {
+  const settleThreshold = 4;
+  const idleMs = 120;
+  const maxWaitMs = 1600;
+  let lastScrollY = window.scrollY;
+  let idleTimer: number | null = null;
+
+  const finish = () => {
+    clearScrollLockTimers();
+    onSettled?.();
     subsectionScrollInProgress = false;
-  }, 700);
+  };
+
+  const tryFinish = () => {
+    if (Math.abs(window.scrollY - targetTop) <= settleThreshold) {
+      finish();
+      return true;
+    }
+    return false;
+  };
+
+  const onScroll = () => {
+    lastScrollY = window.scrollY;
+    if (idleTimer) window.clearTimeout(idleTimer);
+    idleTimer = window.setTimeout(() => {
+      if (Math.abs(window.scrollY - lastScrollY) > settleThreshold) return;
+      // Close enough: unlock without snapping (avoids a visible micro-jump).
+      if (Math.abs(window.scrollY - targetTop) <= 24) {
+        finish();
+        return;
+      }
+      window.scrollTo({ top: targetTop, behavior: "auto" });
+      finish();
+    }, idleMs);
+  };
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  scrollSettleCleanup = () => {
+    window.removeEventListener("scroll", onScroll);
+    if (idleTimer) window.clearTimeout(idleTimer);
+  };
+
+  // Already there (tiny jump / same section).
+  if (tryFinish()) return;
+
+  scrollLockReleaseTimer = window.setTimeout(() => {
+    if (Math.abs(window.scrollY - targetTop) > 24) {
+      window.scrollTo({ top: targetTop, behavior: "auto" });
+    }
+    finish();
+  }, maxWaitMs);
+}
+
+export function scrollToTop() {
+  beginScrollLock();
+  const targetTop = 0;
+  window.scrollTo({ top: targetTop, behavior: "smooth" });
+  stripUrlHash();
+  releaseScrollLockWhenSettled(targetTop);
 }
 
 function getSubsectionBoundsElement(section: HTMLElement) {
@@ -57,41 +131,42 @@ function getSubsectionBoundsElement(section: HTMLElement) {
   );
 }
 
+function getScrollFocusElement(target: HTMLElement) {
+  // Prefer the artwork itself so short/last sections (naturalHeight) still land
+  // with the image centered, matching min-h-screen sections.
+  return (
+    target.querySelector<HTMLElement>("[data-image-carousel]") ??
+    target.querySelector<HTMLElement>("figure") ??
+    getSubsectionBoundsElement(target)
+  );
+}
+
 export function getSectionScrollTop(target: HTMLElement) {
   if (target.dataset.scrollAlign === "start" || isMobileViewport()) {
     return target.getBoundingClientRect().top + window.scrollY;
   }
 
-  const rect = target.getBoundingClientRect();
+  const focusEl = getScrollFocusElement(target);
+  const rect = focusEl.getBoundingClientRect();
   const absoluteTop = rect.top + window.scrollY;
-  const centeredTop = absoluteTop + Math.max(0, (rect.height - window.innerHeight) / 2);
+  // Allow negative offset when focus is shorter than the viewport, so it
+  // truly centers instead of sticking to the top of the section.
+  const centeredTop = absoluteTop + (rect.height - window.innerHeight) / 2;
   const maxScrollTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-  return Math.min(centeredTop, maxScrollTop);
+  return Math.min(Math.max(0, centeredTop), maxScrollTop);
 }
 
 export function scrollToSection(targetId: string) {
   const target = document.getElementById(targetId);
   if (!target) return;
 
-  subsectionScrollInProgress = true;
+  beginScrollLock();
   const targetTop = getSectionScrollTop(target);
   window.scrollTo({ top: targetTop, behavior: "smooth" });
   stripUrlHash();
-
-  const settleAndCorrect = () => {
-    const correctedTop = getSectionScrollTop(target);
-    if (Math.abs(window.scrollY - correctedTop) > 2) {
-      window.scrollTo({ top: correctedTop, behavior: "auto" });
-    }
-  };
-
-  const releaseScrollLock = () => {
-    subsectionScrollInProgress = false;
-  };
-
-  requestAnimationFrame(() => requestAnimationFrame(settleAndCorrect));
-  window.setTimeout(settleAndCorrect, 450);
-  window.setTimeout(releaseScrollLock, 700);
+  // Stick to the target computed at scroll start — recalculating after settle
+  // causes a visible micro-jump (fonts/images/fade-up settling).
+  releaseScrollLockWhenSettled(targetTop);
 }
 
 function getMaxScrollTop() {
@@ -103,13 +178,11 @@ function isAtPageBottom() {
 }
 
 export function scrollToPageBottom() {
-  subsectionScrollInProgress = true;
-  window.scrollTo({ top: getMaxScrollTop(), behavior: "smooth" });
+  beginScrollLock();
+  const targetTop = getMaxScrollTop();
+  window.scrollTo({ top: targetTop, behavior: "smooth" });
   stripUrlHash();
-
-  window.setTimeout(() => {
-    subsectionScrollInProgress = false;
-  }, 700);
+  releaseScrollLockWhenSettled(targetTop);
 }
 
 function isSubsectionVisible(id: string) {
@@ -191,7 +264,13 @@ export function setupSubsectionKeyboardNav(subsectionIds: string[]) {
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
     if (isTypingTarget(event.target)) return;
-    if (subsectionScrollInProgress) return;
+
+    // Always swallow up/down while a section scroll is animating, so the
+    // browser's native page scroll can't fight the smooth scroll.
+    if (subsectionScrollInProgress) {
+      event.preventDefault();
+      return;
+    }
 
     const lastId = getLastSubsectionId(subsectionIds);
 

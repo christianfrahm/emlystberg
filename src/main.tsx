@@ -4,6 +4,13 @@ import { RouterProvider } from "@tanstack/react-router";
 import { getRouter } from "./router";
 import "./styles.css";
 
+if (typeof window !== "undefined") {
+  if ("scrollRestoration" in history) {
+    history.scrollRestoration = "manual";
+  }
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+}
+
 const router = getRouter();
 const rootElement = document.getElementById("app");
 
