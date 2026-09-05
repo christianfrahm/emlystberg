@@ -615,6 +615,7 @@ export function Section({
                       if (activeImageIndex >= images.length - 1) return;
                       goToImageIndex(activeImageIndex + 1);
                     }}
+                  >
                     <span className="carousel-hit-arrow" aria-hidden>
                       <svg viewBox="0 0 24 24" className="h-5 w-5">
                         <path
