@@ -157,6 +157,7 @@ export function Section({
   });
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [carouselDirection, setCarouselDirection] = useState<1 | -1 | null>(null);
+  const [carouselInstant, setCarouselInstant] = useState(false);
   const currentImage = images[activeImageIndex] ?? images[0];
   const currentBody = bodyByImage?.[activeImageIndex] ?? body;
   const shouldAnimateBody = transitionKey !== undefined || Boolean(bodyByImage);
@@ -206,16 +207,32 @@ export function Section({
       if (!image) return;
 
       const direction = getCarouselDirection(activeImageIndex, index, images.length);
+      const wrapsAround =
+        (activeImageIndex === images.length - 1 && index === 0) ||
+        (activeImageIndex === 0 && index === images.length - 1);
       carouselTransitionRef.current = true;
 
       void waitForImageReady(image.src, getCarouselImageElement(image.src)).then(() => {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             setCarouselDirection(direction);
+            if (wrapsAround) {
+              // Avoid sliding through the whole strip when looping ends.
+              setCarouselInstant(true);
+              setActiveImageIndex(index);
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  setCarouselInstant(false);
+                  carouselTransitionRef.current = false;
+                });
+              });
+              return;
+            }
+
             setActiveImageIndex(index);
             window.setTimeout(() => {
               carouselTransitionRef.current = false;
-            }, 480);
+            }, 720);
           });
         });
       });
@@ -414,32 +431,80 @@ export function Section({
             >
               <div
                 ref={carouselFrameRef}
-                className={`${mediaFrameClassName}${images.length > 1 ? " relative" : ""}`.trim()}
-                data-carousel-direction={carouselDirection ?? undefined}
+                className={`${mediaFrameClassName}${images.length > 1 ? " relative overflow-hidden group/carousel" : ""}`.trim()}
               >
                 {images.length > 1 ? (
-                  images.map((image, index) => {
-                    const isActive = index === activeImageIndex;
-                    return (
-                      <img
-                        key={image.src}
-                        src={image.src}
-                        alt={isActive ? image.alt : ""}
-                        aria-hidden={isActive ? undefined : true}
-                        loading="eager"
-                        decoding="async"
-                        onLoad={() => markImagePreloaded(image.src)}
-                        data-enter={
-                          isActive && carouselDirection !== null ? carouselDirection : undefined
-                        }
-                        className={[
-                          mediaFitClassName,
-                          "carousel-image",
-                          isActive ? "carousel-image-active" : "carousel-image-inactive",
-                        ].join(" ")}
-                      />
-                    );
-                  })
+                  <>
+                  <div
+                    className={[
+                      "carousel-track",
+                      carouselInstant ? "carousel-track-instant" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    style={{
+                      transform: `translate3d(calc(-${activeImageIndex} * (100% + var(--carousel-gap, 0px))), 0, 0)`,
+                    }}
+                    data-carousel-direction={carouselDirection ?? undefined}
+                  >
+                    {images.map((image, index) => {
+                      const isActive = index === activeImageIndex;
+                      return (
+                        <div key={image.src} className="carousel-slide">
+                          <img
+                            src={image.src}
+                            alt={isActive ? image.alt : ""}
+                            aria-hidden={isActive ? undefined : true}
+                            loading="eager"
+                            decoding="async"
+                            onLoad={() => markImagePreloaded(image.src)}
+                            className={mediaFitClassName}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button
+                    type="button"
+                    className="carousel-hit carousel-hit-prev"
+                    aria-label="Forrige billede"
+                    onClick={() =>
+                      goToImageIndex((activeImageIndex - 1 + images.length) % images.length)
+                    }
+                  >
+                    <span className="carousel-hit-arrow" aria-hidden>
+                      <svg viewBox="0 0 24 24" className="h-5 w-5">
+                        <path
+                          d="M15 18l-6-6 6-6"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="carousel-hit carousel-hit-next"
+                    aria-label="Næste billede"
+                    onClick={() => goToImageIndex((activeImageIndex + 1) % images.length)}
+                  >
+                    <span className="carousel-hit-arrow" aria-hidden>
+                      <svg viewBox="0 0 24 24" className="h-5 w-5">
+                        <path
+                          d="M9 18l6-6-6-6"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </button>
+                  </>
                 ) : (
                   <img
                     src={currentImage.src}
