@@ -52,7 +52,14 @@ function handleCarouselKeyDown(event: KeyboardEvent) {
   const index = registration.getActiveIndex();
   const length = registration.getLength();
   const nextIndex =
-    event.key === "ArrowLeft" ? (index - 1 + length) % length : (index + 1) % length;
+    event.key === "ArrowLeft"
+      ? Math.max(0, index - 1)
+      : Math.min(length - 1, index + 1);
+
+  if (nextIndex === index) {
+    event.preventDefault();
+    return;
+  }
 
   event.preventDefault();
   registration.goTo(nextIndex);
@@ -369,9 +376,15 @@ export function Section({
       let nextIndex = activeImageIndex;
 
       if (deltaX < -distanceThreshold || velocity < -velocityThreshold) {
-        nextIndex = (activeImageIndex + 1) % images.length;
+        // Swipe left → next image (no wrap past the last)
+        if (activeImageIndex < images.length - 1) {
+          nextIndex = activeImageIndex + 1;
+        }
       } else if (deltaX > distanceThreshold || velocity > velocityThreshold) {
-        nextIndex = (activeImageIndex - 1 + images.length) % images.length;
+        // Swipe right → previous image (no wrap before the first)
+        if (activeImageIndex > 0) {
+          nextIndex = activeImageIndex - 1;
+        }
       }
 
       if (nextIndex === activeImageIndex) {
@@ -576,9 +589,10 @@ export function Section({
                     type="button"
                     className="carousel-hit carousel-hit-prev"
                     aria-label="Forrige billede"
-                    onClick={() =>
-                      goToImageIndex((activeImageIndex - 1 + images.length) % images.length)
-                    }
+                    onClick={() => {
+                      if (activeImageIndex <= 0) return;
+                      goToImageIndex(activeImageIndex - 1);
+                    }}
                   >
                     <span className="carousel-hit-arrow" aria-hidden>
                       <svg viewBox="0 0 24 24" className="h-5 w-5">
@@ -597,8 +611,10 @@ export function Section({
                     type="button"
                     className="carousel-hit carousel-hit-next"
                     aria-label="Næste billede"
-                    onClick={() => goToImageIndex((activeImageIndex + 1) % images.length)}
-                  >
+                    onClick={() => {
+                      if (activeImageIndex >= images.length - 1) return;
+                      goToImageIndex(activeImageIndex + 1);
+                    }}
                     <span className="carousel-hit-arrow" aria-hidden>
                       <svg viewBox="0 0 24 24" className="h-5 w-5">
                         <path
