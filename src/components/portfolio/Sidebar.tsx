@@ -49,33 +49,11 @@ export function Sidebar({
     onMenuStateChange?.(open);
   }, [open, onMenuStateChange]);
 
-  const scrollToTopForMenu = useCallback(() => {
-    scrollToTop();
-    notifyMenuClosed();
-  }, [notifyMenuClosed]);
-
   return (
     <>
-      <button
-        type="button"
-        onClick={scrollToTopForMenu}
-        aria-label="Gå til top og vis menu"
-        className="md:hidden fixed right-0 top-0 z-50 inline-flex h-11 w-11 items-center justify-center text-foreground/75 hover:text-foreground transition-colors"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.25rem)" }}
-      >
-        <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
-          <path
-            d="M4 7H20M4 12H20M4 17H20"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-          />
-        </svg>
-      </button>
-
       <nav
         aria-label="Afsnit"
-        className="md:hidden w-full px-5 pb-8 pr-16 pt-[calc(env(safe-area-inset-top)+5rem)]"
+        className="md:hidden w-full px-5 pb-8 pt-[calc(env(safe-area-inset-top)+5rem)]"
       >
         <ul className="space-y-7 font-serif text-lg leading-snug tracking-tight">
           {items.map((item) => {
