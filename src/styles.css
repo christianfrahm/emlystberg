@@ -239,6 +239,7 @@
     will-change: transform;
     backface-visibility: hidden;
     transition: transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
+    touch-action: pan-y;
   }
 
   .carousel-track-instant {
@@ -308,6 +309,10 @@
   @media (max-width: 767px) {
     .carousel-hit {
       display: none;
+    }
+
+    .carousel-track {
+      transition-duration: 280ms;
     }
   }
 }

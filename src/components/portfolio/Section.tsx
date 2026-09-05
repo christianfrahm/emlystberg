@@ -147,7 +147,10 @@ export function Section({
 }: SectionProps) {
   const ref = useRef<HTMLElement | null>(null);
   const enterDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number; t: number } | null>(null);
+  const touchLastRef = useRef<{ x: number; t: number } | null>(null);
+  const dragAxisRef = useRef<"x" | "y" | null>(null);
+  const dragOffsetRef = useRef(0);
   const carouselFrameRef = useRef<HTMLDivElement | null>(null);
   const carouselTransitionRef = useRef(false);
   const carouselNavRef = useRef({
@@ -158,6 +161,8 @@ export function Section({
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [carouselDirection, setCarouselDirection] = useState<1 | -1 | null>(null);
   const [carouselInstant, setCarouselInstant] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const currentImage = images[activeImageIndex] ?? images[0];
   const currentBody = bodyByImage?.[activeImageIndex] ?? body;
   const shouldAnimateBody = transitionKey !== undefined || Boolean(bodyByImage);
@@ -256,41 +261,147 @@ export function Section({
     });
   }, [id, images.length]);
 
-  const handleImageTouchStart = (event: React.TouchEvent<HTMLElement>) => {
-    if (images.length <= 1) return;
-    if (typeof window !== "undefined" && !window.matchMedia("(max-width: 767px)").matches) return;
+  useEffect(() => {
+    const frame = carouselFrameRef.current;
+    if (!frame || images.length <= 1) return;
 
-    const touch = event.touches[0];
-    if (!touch) return;
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
-  };
+    const isMobile = () => window.matchMedia("(max-width: 767px)").matches;
 
-  const handleImageTouchEnd = (event: React.TouchEvent<HTMLElement>) => {
-    if (!touchStartRef.current || images.length <= 1) return;
-    if (typeof window !== "undefined" && !window.matchMedia("(max-width: 767px)").matches) return;
+    const resetDrag = () => {
+      touchStartRef.current = null;
+      touchLastRef.current = null;
+      dragAxisRef.current = null;
+      dragOffsetRef.current = 0;
+      setIsDragging(false);
+      setDragOffset(0);
+    };
 
-    const touch = event.changedTouches[0];
-    if (!touch) return;
+    const onTouchStart = (event: TouchEvent) => {
+      if (!isMobile() || carouselTransitionRef.current) return;
+      const touch = event.touches[0];
+      if (!touch) return;
+      touchStartRef.current = { x: touch.clientX, y: touch.clientY, t: performance.now() };
+      touchLastRef.current = { x: touch.clientX, t: performance.now() };
+      dragAxisRef.current = null;
+      dragOffsetRef.current = 0;
+      setDragOffset(0);
+    };
 
-    const deltaX = touch.clientX - touchStartRef.current.x;
-    const deltaY = touch.clientY - touchStartRef.current.y;
-    touchStartRef.current = null;
+    const onTouchMove = (event: TouchEvent) => {
+      if (!touchStartRef.current || !isMobile()) return;
+      const touch = event.touches[0];
+      if (!touch) return;
 
-    const swipeThreshold = 48;
-    if (Math.abs(deltaX) < swipeThreshold) return;
-    if (Math.abs(deltaX) <= Math.abs(deltaY)) return;
+      const deltaX = touch.clientX - touchStartRef.current.x;
+      const deltaY = touch.clientY - touchStartRef.current.y;
 
-    if (deltaX < 0) {
-      goToImageIndex((activeImageIndex + 1) % images.length);
-      return;
-    }
+      if (!dragAxisRef.current) {
+        if (Math.abs(deltaX) < 8 && Math.abs(deltaY) < 8) return;
+        dragAxisRef.current = Math.abs(deltaX) > Math.abs(deltaY) ? "x" : "y";
+        if (dragAxisRef.current === "x") {
+          setIsDragging(true);
+        }
+      }
 
-    goToImageIndex((activeImageIndex - 1 + images.length) % images.length);
-  };
+      if (dragAxisRef.current !== "x") return;
 
-  const handleImageTouchCancel = () => {
-    touchStartRef.current = null;
-  };
+      event.preventDefault();
+      touchLastRef.current = { x: touch.clientX, t: performance.now() };
+
+      // Rubber-band slightly at ends before wrap decision
+      const atStart = activeImageIndex === 0 && deltaX > 0;
+      const atEnd = activeImageIndex === images.length - 1 && deltaX < 0;
+      const offset = atStart || atEnd ? deltaX * 0.35 : deltaX;
+      dragOffsetRef.current = offset;
+      setDragOffset(offset);
+    };
+
+    const settleToIndex = (nextIndex: number) => {
+      const width = frame.clientWidth || 1;
+      const wrapsAround =
+        (activeImageIndex === images.length - 1 && nextIndex === 0) ||
+        (activeImageIndex === 0 && nextIndex === images.length - 1);
+
+      if (wrapsAround) {
+        resetDrag();
+        goToImageIndex(nextIndex);
+        return;
+      }
+
+      const direction = nextIndex > activeImageIndex ? 1 : -1;
+      setCarouselDirection(direction);
+      carouselTransitionRef.current = true;
+      setIsDragging(false);
+      // Animate remaining distance to the neighboring slide, then snap index.
+      setDragOffset(direction > 0 ? -width : width);
+
+      window.setTimeout(() => {
+        setCarouselInstant(true);
+        setActiveImageIndex(nextIndex);
+        dragOffsetRef.current = 0;
+        setDragOffset(0);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setCarouselInstant(false);
+            carouselTransitionRef.current = false;
+          });
+        });
+      }, 280);
+    };
+
+    const onTouchEnd = () => {
+      if (!touchStartRef.current || !isMobile()) return;
+
+      if (dragAxisRef.current !== "x") {
+        resetDrag();
+        return;
+      }
+
+      const width = frame.clientWidth || 1;
+      const deltaX = dragOffsetRef.current;
+      const start = touchStartRef.current;
+      const last = touchLastRef.current;
+      const elapsed = last && start ? Math.max(last.t - start.t, 1) : 1;
+      const velocity = last && start ? (last.x - start.x) / elapsed : 0;
+
+      const distanceThreshold = Math.min(72, width * 0.2);
+      const velocityThreshold = 0.45;
+      let nextIndex = activeImageIndex;
+
+      if (deltaX < -distanceThreshold || velocity < -velocityThreshold) {
+        nextIndex = (activeImageIndex + 1) % images.length;
+      } else if (deltaX > distanceThreshold || velocity > velocityThreshold) {
+        nextIndex = (activeImageIndex - 1 + images.length) % images.length;
+      }
+
+      if (nextIndex === activeImageIndex) {
+        setIsDragging(false);
+        setDragOffset(0);
+        dragOffsetRef.current = 0;
+        touchStartRef.current = null;
+        touchLastRef.current = null;
+        dragAxisRef.current = null;
+        return;
+      }
+
+      settleToIndex(nextIndex);
+      touchStartRef.current = null;
+      touchLastRef.current = null;
+      dragAxisRef.current = null;
+    };
+
+    frame.addEventListener("touchstart", onTouchStart, { passive: true });
+    frame.addEventListener("touchmove", onTouchMove, { passive: false });
+    frame.addEventListener("touchend", onTouchEnd);
+    frame.addEventListener("touchcancel", resetDrag);
+
+    return () => {
+      frame.removeEventListener("touchstart", onTouchStart);
+      frame.removeEventListener("touchmove", onTouchMove);
+      frame.removeEventListener("touchend", onTouchEnd);
+      frame.removeEventListener("touchcancel", resetDrag);
+    };
+  }, [activeImageIndex, goToImageIndex, images.length]);
 
   useEffect(() => {
     setActiveImageIndex((prev) => {
@@ -425,9 +536,6 @@ export function Section({
             <div data-image-carousel={images.length > 1 ? id : undefined}>
             <figure
               className={`fade-up ${mediaAspect} ${images.length > 1 ? "max-md:touch-pan-y" : ""}`.trim()}
-              onTouchStart={images.length > 1 ? handleImageTouchStart : undefined}
-              onTouchEnd={images.length > 1 ? handleImageTouchEnd : undefined}
-              onTouchCancel={images.length > 1 ? handleImageTouchCancel : undefined}
             >
               <div
                 ref={carouselFrameRef}
@@ -438,12 +546,12 @@ export function Section({
                   <div
                     className={[
                       "carousel-track",
-                      carouselInstant ? "carousel-track-instant" : "",
+                      carouselInstant || isDragging ? "carousel-track-instant" : "",
                     ]
                       .filter(Boolean)
                       .join(" ")}
                     style={{
-                      transform: `translate3d(calc(-${activeImageIndex} * (100% + var(--carousel-gap, 0px))), 0, 0)`,
+                      transform: `translate3d(calc(-${activeImageIndex} * (100% + var(--carousel-gap, 0px)) + ${dragOffset}px), 0, 0)`,
                     }}
                     data-carousel-direction={carouselDirection ?? undefined}
                   >
